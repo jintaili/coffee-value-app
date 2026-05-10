@@ -46,6 +46,7 @@ async def test_usd_price_100g_is_computed_without_external_rate() -> None:
     assert converted.listed_price == 12.5
     assert converted.listed_currency == "USD"
     assert converted.price_100g_usd == 5.0
+    assert converted.currency_conversion_status == "not_needed"
     assert client.calls == []
 
 
@@ -61,10 +62,29 @@ async def test_non_usd_price_is_converted_to_usd() -> None:
     assert converted.listed_currency == "USD"
     assert converted.original_listed_price == 20.0
     assert converted.original_listed_currency == "EUR"
+    assert converted.currency_conversion_status == "converted"
+    assert converted.currency_conversion_rate == 1.25
+    assert converted.currency_conversion_date == "2026-05-09"
     assert converted.price_100g_usd == 10.0
     assert converted.assumptions == [
         "converted 20.00 EUR to 25.00 USD using Frankfurter rate from 2026-05-09"
     ]
+
+
+@pytest.mark.anyio
+async def test_dkk_price_is_converted_to_usd() -> None:
+    converter = CurrencyConverter(client=FakeRateClient(rate=0.1574, date="2026-05-09"))
+
+    converted = await converter.normalize_to_usd(
+        price(listed_price=179.0, listed_currency="DKK", package_grams=200.0)
+    )
+
+    assert converted.listed_price == 28.17
+    assert converted.listed_currency == "USD"
+    assert converted.original_listed_price == 179.0
+    assert converted.original_listed_currency == "DKK"
+    assert converted.price_100g_usd == 14.09
+    assert converted.currency_conversion_status == "converted"
 
 
 @pytest.mark.anyio
@@ -87,4 +107,5 @@ async def test_failed_conversion_keeps_original_price_and_records_assumption() -
     assert converted.listed_price == 20.0
     assert converted.listed_currency == "GBP"
     assert converted.price_100g_usd is None
+    assert converted.currency_conversion_status == "failed"
     assert converted.assumptions == ["currency conversion unavailable for GBP; price left unconverted"]
