@@ -42,3 +42,7 @@ Override the extraction model:
 ```bash
 coffee-value extract "https://example.com/product" --model gpt-4o-mini
 ```
+
+## Currency Conversion
+
+Non-USD extracted prices are normalized to USD before prediction using Frankfurter's public exchange-rate API. Rates are cached in memory for 12 hours, and conversion assumptions are returned in the analysis response. If conversion fails, the original price is kept and value prediction remains unavailable for that item.

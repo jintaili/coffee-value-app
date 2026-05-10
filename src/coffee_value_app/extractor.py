@@ -123,7 +123,7 @@ Extraction guidance:
 - listed_currency: ISO-like currency code such as USD, CAD, GBP, EUR when inferable; otherwise null.
 - bag_size_value and bag_size_unit: package size for the same selected/default variant as the price.
 - package_grams: convert bag size to grams. Use 1 oz = 28.3495231 g and 1 lb = 453.59237 g.
-- price_100g_usd: only fill when listed price is USD and package_grams is known. Otherwise null.
+- price_100g_usd: only fill when listed price is USD and package_grams is known. Otherwise null; the server will convert non-USD prices.
 - assumptions: record assumptions such as "currency assumed USD from $" or "default variant selected".
 - If embedded product variant data identifies a selected_by_url variant, use that variant for price and package size.
 - If no selected variant is present, use the variant marked default_for_inference, chosen as the package size closest to 10 oz.

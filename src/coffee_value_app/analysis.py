@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from coffee_value_app.config import Settings, load_settings
+from coffee_value_app.currency import CurrencyConverter
 from coffee_value_app.extractor import OpenAILLMExtractor
 from coffee_value_app.fetcher import fetch_product_page
 from coffee_value_app.html_text import html_to_text
@@ -30,12 +31,14 @@ class AnalysisService:
         *,
         extractor: OpenAILLMExtractor | None = None,
         roaster_resolver: OpenAIWebRoasterResolver | None = None,
+        currency_converter: CurrencyConverter | None = None,
         model_service: ModelService | None = None,
         settings: Settings | None = None,
     ) -> None:
         self.settings = settings or load_settings()
         self.extractor = extractor or OpenAILLMExtractor(settings=self.settings)
         self.roaster_resolver = roaster_resolver or OpenAIWebRoasterResolver(settings=self.settings)
+        self.currency_converter = currency_converter or CurrencyConverter()
         self.model_service = model_service or ModelService()
 
     async def analyze_url(self, url: str, *, resolve_roaster_country: bool = True) -> AnalyzeResponse:
@@ -56,6 +59,7 @@ class AnalysisService:
                     update={"coffee": apply_roaster_country_resolution(extraction.coffee, resolution)}
                 )
 
+        extraction = extraction.model_copy(update={"price": await self.currency_converter.normalize_to_usd(extraction.price)})
         model_input = to_model_input(extraction.coffee, extraction.price)
         return AnalyzeResponse(
             input=AnalyzeRequest(url=page.final_url),
