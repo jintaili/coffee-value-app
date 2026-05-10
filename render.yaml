@@ -3,7 +3,7 @@ services:
     name: worth-the-roast
     runtime: python
     plan: free
-    buildCommand: pip install -e .
+    buildCommand: python -m pip install .
     startCommand: uvicorn coffee_value_app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:

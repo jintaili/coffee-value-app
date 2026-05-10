@@ -265,8 +265,12 @@ form.addEventListener("submit", async (event) => {
     });
     setProgress("predict");
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `Request failed with status ${response.status}`);
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || `Request failed with status ${response.status}`);
+      }
+      throw new Error(`Analysis service returned ${response.status}. Check Render logs for a crash or restart during analysis.`);
     }
     const data = await response.json();
     render(data);
