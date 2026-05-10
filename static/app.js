@@ -17,6 +17,14 @@ const formatMoney = (value) => value == null ? "—" : `$${Number(value).toFixed
 const formatNumber = (value, digits = 1) => value == null ? "—" : Number(value).toFixed(digits);
 const titleize = (value) => String(value || "").replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const joinList = (value) => Array.isArray(value) && value.length ? value.map(titleize).join(", ") : "—";
+const verdictLabels = {
+  good_value: "Good Value",
+  priced_about_right: "Fair",
+  expensive_for_predicted_quality: "Expensive",
+  insufficient_information: "Insufficient Info",
+  model_not_available: "Unavailable",
+  model_not_available_price_missing: "Unavailable",
+};
 
 function setProgress(state) {
   const order = ["fetch", "extract", "predict"];
@@ -35,7 +43,7 @@ function setLoading(isLoading) {
 }
 
 function setResultState(state) {
-  heroVerdict.classList.remove("is-pending", "is-loading", "is-good-value", "is-fair", "is-expensive");
+  heroVerdict.classList.remove("is-pending", "is-loading", "is-good-value", "is-fair", "is-expensive", "is-insufficient");
   heroVerdict.classList.add(state);
 }
 
@@ -94,10 +102,10 @@ function renderPrediction(data) {
 
 function renderVerdict(data) {
   const value = data.prediction.value;
-  const verdict = titleize(value.verdict);
+  const verdict = verdictLabels[value.verdict] || titleize(value.verdict);
   document.querySelector("#verdictText").textContent = verdict;
   const delta = value.listed_vs_predicted_delta_pct;
-  const state = delta == null ? "is-pending" : delta < -20 ? "is-good-value" : delta > 20 ? "is-expensive" : "is-fair";
+  const state = delta == null ? "is-insufficient" : delta < -20 ? "is-good-value" : delta > 20 ? "is-expensive" : "is-fair";
   setResultState(state);
   const copy = delta == null
     ? "The app needs both listed price and predicted fair price to judge value."

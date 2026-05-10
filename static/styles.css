@@ -260,6 +260,11 @@ input {
   --verdict-soft: #f0ebe5;
 }
 
+.hero-verdict.is-insufficient {
+  --verdict-color: #8d8176;
+  --verdict-soft: #f0ebe5;
+}
+
 .hero-verdict.is-good-value {
   --verdict-color: var(--green);
   --verdict-soft: var(--green-soft);
@@ -369,7 +374,7 @@ input {
   min-width: 0;
   min-height: 154px;
   display: grid;
-  grid-template-rows: 42px auto 38px;
+  grid-template-rows: 42px 54px 40px;
   align-content: center;
   gap: 10px;
   padding: 18px 18px;
@@ -393,6 +398,7 @@ input {
   display: flex;
   align-items: baseline;
   gap: 2px;
+  align-self: center;
   color: var(--ink);
   font-size: clamp(30px, 2.4vw, 44px);
   line-height: 1;
@@ -405,12 +411,17 @@ input {
   font-weight: 650;
 }
 
+.rating-denominator {
+  transform: translateY(0.1em);
+}
+
 #predictedRating {
   color: inherit;
   font-size: inherit;
 }
 
 .hero-metric em {
+  align-self: start;
   color: var(--muted);
   font-style: normal;
   font-size: 16px;
