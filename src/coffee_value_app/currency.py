@@ -48,20 +48,19 @@ class CurrencyConverter:
 
     async def normalize_to_usd(self, price: ExtractedPrice) -> ExtractedPrice:
         if price.listed_price is None or price.package_grams is None:
-            return price.model_copy(update={"currency_conversion_status": "missing_data"})
+            return price
 
         currency = normalize_currency(price.listed_currency)
         if currency == "USD":
-            return ensure_usd_price_100g(price).model_copy(update={"currency_conversion_status": "not_needed"})
+            return ensure_usd_price_100g(price)
         if currency is None:
-            return price.model_copy(update={"currency_conversion_status": "missing_data"})
+            return price
 
         try:
             rate, rate_date = await self.get_rate(currency, "USD")
         except (httpx.HTTPError, CurrencyConversionError, ValueError):
             return price.model_copy(
                 update={
-                    "currency_conversion_status": "failed",
                     "assumptions": [
                         *price.assumptions,
                         f"currency conversion unavailable for {currency}; price left unconverted",
@@ -79,9 +78,6 @@ class CurrencyConverter:
                 "listed_currency": "USD",
                 "original_listed_price": price.original_listed_price or original_price,
                 "original_listed_currency": price.original_listed_currency or currency,
-                "currency_conversion_status": "converted",
-                "currency_conversion_rate": rate,
-                "currency_conversion_date": rate_date,
                 "price_100g_usd": converted_100g,
                 "assumptions": [
                     *price.assumptions,

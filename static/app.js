@@ -28,7 +28,7 @@ const verdictLabels = {
 const currencySymbols = {
   USD: "$",
   EUR: "€",
-  DKK: "kr ",
+  DKK: "DKK ",
   GBP: "£",
   CAD: "CA$",
   AUD: "A$",
@@ -71,16 +71,18 @@ function formatCurrency(value, currency) {
   return `${symbol}${Number(value).toFixed(2)}`;
 }
 
-function formatListedPrice(price) {
-  const listed = formatCurrency(price.listed_price, price.listed_currency);
-  if (
-    price.original_listed_price != null &&
-    price.original_listed_currency &&
-    price.original_listed_currency !== price.listed_currency
-  ) {
-    return `${listed} from ${formatCurrency(price.original_listed_price, price.original_listed_currency)}`;
+function formatShopListedPrice(price) {
+  if (price.original_listed_price != null && price.original_listed_currency) {
+    return formatCurrency(price.original_listed_price, price.original_listed_currency);
   }
-  return listed;
+  return formatCurrency(price.listed_price, price.listed_currency);
+}
+
+function formatListedPriceSubtext(price) {
+  if (price.original_listed_price != null && price.original_listed_currency) {
+    return formatCurrency(price.original_listed_price, price.original_listed_currency);
+  }
+  return price.price_100g_usd == null ? "—" : `${formatMoney(price.price_100g_usd)} / 100g`;
 }
 
 function analysisPriceDetails(price) {
@@ -89,9 +91,6 @@ function analysisPriceDetails(price) {
     listed_currency: price.listed_currency,
     original_listed_price: price.original_listed_price,
     original_listed_currency: price.original_listed_currency,
-    currency_conversion_status: price.currency_conversion_status,
-    currency_conversion_rate: price.currency_conversion_rate,
-    currency_conversion_date: price.currency_conversion_date,
     price_100g_usd: price.price_100g_usd,
     bag_size_value: price.bag_size_value,
     bag_size_unit: price.bag_size_unit,
@@ -115,7 +114,7 @@ function renderSummary(data) {
   addSummaryRow("Origin", [coffee.origin_country, coffee.origin_region].filter(Boolean).filter((v) => v !== "unknown").join(" · "));
   addSummaryRow("Tasting notes", coffee.sensory_text);
   addSummaryRow("Process", joinList(coffee.process_method));
-  addSummaryRow("Listed price", formatListedPrice(price));
+  addSummaryRow("Listed price", formatShopListedPrice(price));
   addSummaryRow("Variety", joinList(coffee.variety));
   addSummaryRow("Bag size", price.bag_size_value && price.bag_size_unit ? `${price.bag_size_value} ${price.bag_size_unit}` : "—");
   addSummaryRow("Normalized listed price", price.price_100g_usd == null ? "—" : `${formatMoney(price.price_100g_usd)} / 100g`);
@@ -142,8 +141,8 @@ function renderPrediction(data) {
   document.querySelector("#detailPredictedBagPrice").textContent = formatMoney(price.predicted_bag_price_usd);
   document.querySelector("#predicted100g").textContent = price.predicted_price_100g_usd == null ? "—" : `${formatMoney(price.predicted_price_100g_usd)} / 100g`;
   document.querySelector("#detailPredicted100g").textContent = price.predicted_price_100g_usd == null ? "—" : formatMoney(price.predicted_price_100g_usd);
-  document.querySelector("#listedBagPrice").textContent = formatListedPrice(listedPrice);
-  document.querySelector("#listed100g").textContent = listedPrice.price_100g_usd == null ? "—" : `${formatMoney(listedPrice.price_100g_usd)} / 100g`;
+  document.querySelector("#listedBagPrice").textContent = formatCurrency(listedPrice.listed_price, listedPrice.listed_currency);
+  document.querySelector("#listed100g").textContent = formatListedPriceSubtext(listedPrice);
   document.querySelector("#priceInterval").textContent = price.interval_low == null ? "—" : `${formatMoney(price.interval_low)}–${formatMoney(price.interval_high)}`;
   document.querySelector("#modelLine").textContent = `Rating model: ${rating.model_version} · Price model: ${price.model_version}`;
   document.querySelector("#ratingLabel").textContent = rating.predicted == null ? "—" : rating.predicted >= 90 ? "Excellent quality" : rating.predicted >= 86 ? "High quality" : "Solid quality";

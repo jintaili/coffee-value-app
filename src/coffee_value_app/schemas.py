@@ -105,11 +105,6 @@ class ExtractedPrice(BaseModel):
     listed_currency: str | None
     original_listed_price: float | None = Field(default=None, ge=0)
     original_listed_currency: str | None = None
-    currency_conversion_status: Literal["not_attempted", "not_needed", "converted", "missing_data", "failed"] = (
-        "not_attempted"
-    )
-    currency_conversion_rate: float | None = Field(default=None, gt=0)
-    currency_conversion_date: str | None = None
     bag_size_value: float | None = Field(gt=0)
     bag_size_unit: Literal["g", "kg", "oz", "lb"] | None
     package_grams: float | None = Field(gt=0)
