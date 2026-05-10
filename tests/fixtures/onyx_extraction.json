@@ -1,0 +1,39 @@
+{
+  "coffee": {
+    "coffee_name": "Peru La Margarita Gesha",
+    "roaster": "Onyx Coffee Lab",
+    "roaster_location": null,
+    "roaster_country": "United States",
+    "origin_country": "Peru",
+    "origin_region": "Cusco",
+    "process_method": ["washed"],
+    "variety": ["gesha"],
+    "producer_or_farm": "Solorzano Family",
+    "altitude": "1900 MASL",
+    "is_blend": false,
+    "is_espresso": true,
+    "is_decaf": false,
+    "sensory_text": "Jasmine, White Grape, Black Tea",
+    "producer_text": "This delicate and sweet Gesha variety is produced in Southern Peru by the Solorzano Family.",
+    "source_snippets": [
+      {
+        "field": "coffee_name",
+        "snippet": "Peru La Margarita Gesha"
+      }
+    ]
+  },
+  "price": {
+    "listed_price": 70.0,
+    "listed_currency": "USD",
+    "bag_size_value": 10.0,
+    "bag_size_unit": "oz",
+    "package_grams": 283.495,
+    "price_100g_usd": 24.67,
+    "assumptions": ["selected_by_url variant used for price and package size"]
+  },
+  "quality": {
+    "extraction_quality": "good",
+    "missing_fields": [],
+    "warnings": []
+  }
+}

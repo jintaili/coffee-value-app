@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coffee Value</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">◐</div>
+        <div class="brand-name">Coffee Value</div>
+        <div class="tagline">Quickly judge specialty coffee quality and price fairness</div>
+      </div>
+      <nav class="nav">
+        <button class="nav-button" type="button" id="historyButton">↺ History</button>
+        <button class="nav-button" type="button" id="aboutButton">ⓘ About</button>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="panel input-panel">
+        <form id="analyzeForm">
+          <label for="urlInput">Paste a coffee product URL</label>
+          <div class="input-row">
+            <input
+              id="urlInput"
+              name="url"
+              type="url"
+              placeholder="https://example-roaster.com/products/example-coffee"
+              autocomplete="url"
+              required
+            />
+            <button class="primary-button" type="submit">
+              <span aria-hidden="true">▶</span>
+              Analyze
+            </button>
+          </div>
+        </form>
+        <div class="progress" aria-label="Analysis progress">
+          <div class="step" data-step="fetch"><span class="step-dot">✓</span><span>Fetching page</span></div>
+          <div class="step-line"></div>
+          <div class="step" data-step="extract"><span class="step-dot">✓</span><span>Extracting details</span></div>
+          <div class="step-line"></div>
+          <div class="step" data-step="predict"><span class="step-dot">✓</span><span>Running prediction</span></div>
+        </div>
+        <p class="status-text" id="statusText">Ready to analyze a product page.</p>
+      </section>
+
+      <section class="panel hero-verdict is-pending" id="heroVerdict">
+        <div class="hero-copy">
+          <span class="eyebrow">Value Verdict</span>
+          <div class="verdict" id="verdictText">Awaiting analysis</div>
+          <p id="verdictCopy">Paste a product URL to estimate quality and price fairness.</p>
+        </div>
+        <div class="hero-gauge">
+          <svg class="gauge" viewBox="0 0 260 150" aria-hidden="true">
+            <path class="gauge-arc gauge-green" d="M 35 115 A 95 95 0 0 1 83 33" />
+            <path class="gauge-arc gauge-yellow" d="M 90 29 A 95 95 0 0 1 170 29" />
+            <path class="gauge-arc gauge-red" d="M 177 33 A 95 95 0 0 1 225 115" />
+            <g id="needle" transform="rotate(0 130 115)">
+              <line class="needle-line" x1="130" y1="115" x2="130" y2="48" />
+              <circle class="needle-hub" cx="130" cy="115" r="9" />
+            </g>
+          </svg>
+        </div>
+        <div class="hero-metrics">
+          <div class="hero-metric">
+            <span>Predicted Rating</span>
+            <strong><span id="predictedRating">—</span><small>/100</small></strong>
+            <em id="ratingLabel">—</em>
+          </div>
+          <div class="hero-metric">
+            <span>Predicted Fair Price</span>
+            <strong id="predictedBagPrice">—</strong>
+            <em id="predicted100g">—</em>
+          </div>
+          <div class="hero-metric">
+            <span>Listed Price</span>
+            <strong id="listedBagPrice">—</strong>
+            <em id="listed100g">—</em>
+          </div>
+          <div class="hero-metric premium">
+            <span>Price Premium</span>
+            <strong id="pricePremium">—</strong>
+            <em>vs. predicted fair price</em>
+          </div>
+        </div>
+        <div class="result-overlay" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          <strong>Calculating results</strong>
+        </div>
+      </section>
+
+      <div class="content-grid">
+        <section class="main-column">
+          <section class="panel summary-panel">
+            <h2><span aria-hidden="true">☕</span> Coffee Summary</h2>
+            <div class="summary-grid" id="summaryGrid"></div>
+            <div class="badges" id="badges"></div>
+          </section>
+
+          <section class="panel prediction-panel">
+            <h2><span aria-hidden="true">↗</span> Prediction Details</h2>
+            <div class="metric-grid">
+              <div class="metric-card">
+                <span>Predicted rating</span>
+                <strong id="detailPredictedRating">—</strong>
+              </div>
+              <div class="metric-card">
+                <span>Rating interval</span>
+                <strong id="ratingInterval">—</strong>
+              </div>
+              <div class="metric-card">
+                <span>Predicted fair bag price</span>
+                <strong id="detailPredictedBagPrice">—</strong>
+              </div>
+              <div class="metric-card">
+                <span>Predicted fair price / 100g</span>
+                <strong id="detailPredicted100g">—</strong>
+              </div>
+              <div class="metric-card">
+                <span>Price interval</span>
+                <strong id="priceInterval">—</strong>
+              </div>
+            </div>
+            <p class="model-line" id="modelLine">Rating model: — · Price model: —</p>
+          </section>
+
+          <section class="panel warnings-panel">
+            <h2><span aria-hidden="true">⚠</span> Warnings &amp; Assumptions</h2>
+            <div class="inline-list" id="warningsList"></div>
+          </section>
+
+          <section class="panel details-panel">
+            <div class="details-header">
+              <h2><span aria-hidden="true">▤</span> Details</h2>
+              <button class="ghost-button" type="button" id="toggleDetails">⌃</button>
+            </div>
+            <div id="detailsBody">
+              <div class="tabs" role="tablist">
+                <button class="tab active" type="button" data-tab="json">Raw extracted JSON</button>
+                <button class="tab" type="button" data-tab="snippets">Source snippets</button>
+                <button class="tab" type="button" data-tab="missing">Missing fields</button>
+                <button class="tab" type="button" data-tab="versions">Versions</button>
+              </div>
+              <pre class="code-block" id="detailsContent">{}</pre>
+            </div>
+          </section>
+        </section>
+
+      <aside class="side-column">
+        <section class="panel quality-card">
+          <h2><span aria-hidden="true">🛡</span> Extraction Quality</h2>
+          <div class="quality-row"><span>Quality</span><strong id="qualityValue">—</strong></div>
+          <div class="quality-row"><span>Completeness</span><strong id="completenessValue">—</strong></div>
+          <div class="quality-row"><span>Missing fields</span><strong id="missingValue">—</strong></div>
+          <div class="quality-row"><span>Warnings</span><strong id="warningValue">—</strong></div>
+        </section>
+
+        <section class="panel checks-card">
+          <h2><span aria-hidden="true">☑</span> What the app checks</h2>
+          <ul>
+            <li>origin</li>
+            <li>process</li>
+            <li>variety</li>
+            <li>tasting notes</li>
+            <li>price &amp; bag size</li>
+            <li>model versions</li>
+          </ul>
+        </section>
+      </aside>
+      </div>
+    </main>
+
+    <template id="summaryRowTemplate">
+      <div class="summary-row">
+        <span class="row-label"></span>
+        <strong class="row-value"></strong>
+      </div>
+    </template>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

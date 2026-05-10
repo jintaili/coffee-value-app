@@ -1,0 +1,166 @@
+{
+  "config": {
+    "target": "log(price_usd_per_100g_real)",
+    "model": "elasticnet",
+    "alpha": 0.0001,
+    "l1_ratio": 0.1,
+    "max_features": 24000,
+    "min_df": 5,
+    "max_df": 0.85,
+    "ngram_max": 2,
+    "structured_fields": [
+      "origin_country",
+      "process_method",
+      "variety",
+      "is_blend",
+      "is_espresso",
+      "is_decaf",
+      "producer_or_farm_present",
+      "altitude_present",
+      "roaster_country"
+    ],
+    "text_fields": [
+      "sensory_text",
+      "producer_text"
+    ],
+    "package_features": [
+      "package_grams_log_z",
+      "package_grams_missing",
+      "package_grams_le_20",
+      "package_grams_le_50",
+      "package_grams_le_100"
+    ],
+    "train_rows": 5661,
+    "validation_rows": 1000
+  },
+  "metrics": {
+    "val_rmsle": 0.25916607429018024,
+    "val_spearman": 0.7878334763720073,
+    "val_mae": 3.8750307247076763,
+    "val_median_ae": 0.9684717632957656,
+    "val_p90_ae": 5.098571704012126
+  },
+  "train_metrics": {
+    "train_rmsle": 0.17304645437607943,
+    "train_spearman": 0.9099657038873452,
+    "train_mae": 2.4692275395951544,
+    "train_median_ae": 0.6758264507961487,
+    "train_p90_ae": 3.415803604979894
+  },
+  "overfitting": {
+    "overfit_gap": 0.4976676362691502,
+    "definition": "(val_rmsle - train_rmsle) / train_rmsle"
+  },
+  "quantile_analysis": [
+    {
+      "quantile": 0,
+      "count": 100,
+      "min_true": 0.16704,
+      "max_true": 4.770482,
+      "mean_true": 3.8242471099999995,
+      "mean_pred": 5.031682624255539,
+      "mean_error": 1.207435514255538,
+      "median_abs_error": 0.9982079162948543,
+      "rmsle": 0.374266413629871
+    },
+    {
+      "quantile": 1,
+      "count": 100,
+      "min_true": 4.780222,
+      "max_true": 5.473364,
+      "mean_true": 5.158223799999999,
+      "mean_pred": 5.760474338810579,
+      "mean_error": 0.6022505388105788,
+      "median_abs_error": 0.7066513894464963,
+      "rmsle": 0.21108724049790775
+    },
+    {
+      "quantile": 2,
+      "count": 100,
+      "min_true": 5.479389,
+      "max_true": 5.923112,
+      "mean_true": 5.693446819999999,
+      "mean_pred": 6.185960968820408,
+      "mean_error": 0.49251414882040784,
+      "median_abs_error": 0.6390885327990863,
+      "rmsle": 0.1687764332334061
+    },
+    {
+      "quantile": 3,
+      "count": 100,
+      "min_true": 5.936701,
+      "max_true": 6.40728,
+      "mean_true": 6.153659990000001,
+      "mean_pred": 6.444217427803348,
+      "mean_error": 0.29055743780334886,
+      "median_abs_error": 0.6205084246471242,
+      "rmsle": 0.15367648981921284
+    },
+    {
+      "quantile": 4,
+      "count": 100,
+      "min_true": 6.408196,
+      "max_true": 6.878452,
+      "mean_true": 6.643782970000001,
+      "mean_pred": 6.725676798980299,
+      "mean_error": 0.08189382898029934,
+      "median_abs_error": 0.5445830607666693,
+      "rmsle": 0.13120929642044094
+    },
+    {
+      "quantile": 5,
+      "count": 100,
+      "min_true": 6.896425,
+      "max_true": 7.44896,
+      "mean_true": 7.168001239999999,
+      "mean_pred": 7.081003176439582,
+      "mean_error": -0.0869980635604184,
+      "median_abs_error": 0.6982296425248351,
+      "rmsle": 0.14382212363589061
+    },
+    {
+      "quantile": 6,
+      "count": 100,
+      "min_true": 7.451466,
+      "max_true": 8.494795,
+      "mean_true": 7.89641799,
+      "mean_pred": 7.543397692439535,
+      "mean_error": -0.35302029756046593,
+      "median_abs_error": 0.9473267429405152,
+      "rmsle": 0.21972688478553115
+    },
+    {
+      "quantile": 7,
+      "count": 100,
+      "min_true": 8.544276,
+      "max_true": 10.88125,
+      "mean_true": 9.51762218,
+      "mean_pred": 9.306282698873208,
+      "mean_error": -0.21133948112679224,
+      "median_abs_error": 1.5667622595964925,
+      "rmsle": 0.22775935440505285
+    },
+    {
+      "quantile": 8,
+      "count": 100,
+      "min_true": 10.926728,
+      "max_true": 18.619802,
+      "mean_true": 13.58803668,
+      "mean_pred": 12.725341081736236,
+      "mean_error": -0.8626955982637662,
+      "median_abs_error": 3.300624934442286,
+      "rmsle": 0.3021312959605309
+    },
+    {
+      "quantile": 9,
+      "count": 100,
+      "min_true": 18.713478,
+      "max_true": 2044.331439,
+      "mean_true": 56.208959750000005,
+      "mean_pred": 34.255211991950674,
+      "mean_error": -21.95374775804933,
+      "median_abs_error": 7.887187763603448,
+      "rmsle": 0.4534282645465157
+    }
+  ]
+}
