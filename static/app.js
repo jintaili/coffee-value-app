@@ -167,7 +167,17 @@ function renderDetails() {
   if (currentTab === "json") {
     detailsContent.textContent = JSON.stringify({
       coffee: currentData.coffee,
-      price: currentData.price,
+      price: {
+        original_listed_price: currentData.price.original_listed_price,
+        original_listed_currency: currentData.price.original_listed_currency,
+        normalized_listed_price_usd: currentData.price.listed_price,
+        normalized_price_100g_usd: currentData.price.price_100g_usd,
+        listed_currency: currentData.price.listed_currency,
+        bag_size_value: currentData.price.bag_size_value,
+        bag_size_unit: currentData.price.bag_size_unit,
+        package_grams: currentData.price.package_grams,
+        assumptions: currentData.price.assumptions,
+      },
       model_input: currentData.model_input,
       prediction: currentData.prediction,
       quality: currentData.quality,
