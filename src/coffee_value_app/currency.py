@@ -76,6 +76,8 @@ class CurrencyConverter:
             update={
                 "listed_price": converted_price,
                 "listed_currency": "USD",
+                "original_listed_price": price.original_listed_price or original_price,
+                "original_listed_currency": price.original_listed_currency or currency,
                 "price_100g_usd": converted_100g,
                 "assumptions": [
                     *price.assumptions,

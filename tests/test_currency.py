@@ -59,6 +59,8 @@ async def test_non_usd_price_is_converted_to_usd() -> None:
 
     assert converted.listed_price == 25.0
     assert converted.listed_currency == "USD"
+    assert converted.original_listed_price == 20.0
+    assert converted.original_listed_currency == "EUR"
     assert converted.price_100g_usd == 10.0
     assert converted.assumptions == [
         "converted 20.00 EUR to 25.00 USD using Frankfurter rate from 2026-05-09"

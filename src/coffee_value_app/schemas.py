@@ -103,6 +103,8 @@ class ExtractedPrice(BaseModel):
 
     listed_price: float | None = Field(ge=0)
     listed_currency: str | None
+    original_listed_price: float | None = Field(default=None, ge=0)
+    original_listed_currency: str | None = None
     bag_size_value: float | None = Field(gt=0)
     bag_size_unit: Literal["g", "kg", "oz", "lb"] | None
     package_grams: float | None = Field(gt=0)
