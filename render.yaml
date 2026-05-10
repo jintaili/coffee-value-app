@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: worth-the-roast
+    runtime: python
+    plan: free
+    buildCommand: pip install -e .
+    startCommand: uvicorn coffee_value_app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: OPENAI_EXTRACTION_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_WEB_SEARCH_MODEL
+        value: gpt-4o-mini
+      - key: COFFEE_VALUE_MAX_PAGE_TEXT_CHARS
+        value: "60000"
+      - key: OPENAI_API_KEY
+        sync: false
