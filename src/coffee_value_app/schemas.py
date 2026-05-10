@@ -69,6 +69,7 @@ class ExtractedCoffee(BaseModel):
     is_espresso: bool
     is_decaf: bool
     sensory_text: str
+    display_tasting_notes: str = ""
     producer_text: str
     source_snippets: list[SourceSnippet]
 

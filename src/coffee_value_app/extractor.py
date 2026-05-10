@@ -102,6 +102,7 @@ The extracted fields must align with two downstream prediction models:
 - Price model inputs: all rating inputs plus package_grams.
 
 Extraction guidance:
+- If no selected variant is present, use the variant marked default_for_inference, chosen as the package size closest to 10 oz (283.5 grams).
 - coffee_name: product coffee name, not the website title unless that is the only product name.
 - roaster: company/roaster name shown on the page.
 - roaster_country: country where the roaster is located. Use explicit page evidence first. If absent, use
@@ -115,10 +116,12 @@ Extraction guidance:
 - producer_or_farm: producer, farm, estate, cooperative, mill, washing station, or family when present.
 - altitude: altitude/elevation string as written or normalized, including units.
 - is_blend: true only for clearly labeled blends or multiple producing origins.
-- is_espresso: true only when the product is intended for espresso or espresso appears as a product/use cue.
+- is_espresso: true only when the product is intended for espresso specifically. If espresso is not the primary method, e.g., it's listed among other extraction methods, this field should be False.
 - is_decaf: true when decaf, decaffeinated, Swiss Water, or similar decaffeination method appears.
-- sensory_text: concise tasting/cup/flavor/aroma/body/acidity/finish notes. Prefer product tasting notes over marketing copy.
-- producer_text: concise origin, farm, producer, process, variety, altitude, lot, and sourcing details.
+- sensory_text: verbatim tasting/cup/flavor/aroma/body/acidity/finish notes. Prefer product tasting notes over marketing copy. Translate to English if source is not.
+- display_tasting_notes: concise comma-separated note names for UI display only, usually 3-7 items such as "Mango, jasmine, black tea".
+  Use product tasting notes when present. Translate note names to English if source is not English. Do not include prose, sentence fragments, body/acidity descriptions, or marketing copy.
+- producer_text: verbatim origin, farm, producer, process, variety, altitude, lot, and sourcing details. Translate to English if source is not.
 - listed_price: current product price for the selected/default variant if visible.
 - listed_currency: ISO-like currency code such as USD, CAD, GBP, EUR when inferable; otherwise null.
 - bag_size_value and bag_size_unit: package size for the same selected/default variant as the price.
@@ -126,7 +129,6 @@ Extraction guidance:
 - price_100g_usd: only fill when listed price is USD and package_grams is known. Otherwise null; the server will convert non-USD prices.
 - assumptions: record assumptions such as "currency assumed USD from $" or "default variant selected".
 - If embedded product variant data identifies a selected_by_url variant, use that variant for price and package size.
-- If no selected variant is present, use the variant marked default_for_inference, chosen as the package size closest to 10 oz.
 - source_snippets: include short exact snippets for important extracted fields as objects with field and snippet keys.
   Use fields like name, origin, process, variety, price, bag_size, tasting_notes, producer, altitude when available.
 - missing_fields: include important fields missing for inference quality.

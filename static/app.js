@@ -112,7 +112,7 @@ function renderSummary(data) {
   addSummaryRow("Roaster", coffee.roaster);
   addSummaryRow("Altitude", coffee.altitude);
   addSummaryRow("Origin", [coffee.origin_country, coffee.origin_region].filter(Boolean).filter((v) => v !== "unknown").join(" · "));
-  addSummaryRow("Tasting notes", coffee.sensory_text);
+  addSummaryRow("Tasting notes", coffee.display_tasting_notes || coffee.sensory_text);
   addSummaryRow("Process", joinList(coffee.process_method));
   addSummaryRow("Listed price", formatShopListedPrice(price));
   addSummaryRow("Variety", joinList(coffee.variety));
@@ -321,6 +321,7 @@ render({
     is_espresso: false,
     is_decaf: false,
     sensory_text: "Blackcurrant, citrus, florals",
+    display_tasting_notes: "Blackcurrant, citrus, florals",
     producer_text: "Washed coffee from Nyeri.",
     source_snippets: [],
   },
