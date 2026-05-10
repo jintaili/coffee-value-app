@@ -9,6 +9,5 @@ def test_index_served() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "Coffee Value" in response.text
+    assert "Worth the Roast?" in response.text
     assert "/static/app.js" in response.text
-

@@ -298,7 +298,7 @@ toggleDetails.addEventListener("click", () => {
 });
 
 document.querySelector("#aboutButton").addEventListener("click", () => {
-  alert("Coffee Value extracts coffee attributes from a roaster product page, predicts rating and fair price, and compares that with the listed price.");
+  alert("Worth the Roast? extracts specialty coffee attributes from a roaster product page, predicts rating and fair price, and compares that with the listed price.");
 });
 
 document.querySelector("#historyButton").addEventListener("click", () => {

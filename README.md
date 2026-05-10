@@ -1,4 +1,4 @@
-# Coffee Value App
+# Worth the Roast?
 
 Web app for analyzing specialty coffee product pages and estimating rating, fair price, and value.
 
