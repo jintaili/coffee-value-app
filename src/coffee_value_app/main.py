@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -12,6 +13,7 @@ from coffee_value_app.schemas import AnalyzeRequest, AnalyzeResponse
 
 
 STATIC_DIR = Path(__file__).resolve().parents[2] / "static"
+logger = logging.getLogger(__name__)
 
 
 def create_app() -> FastAPI:
@@ -38,12 +40,16 @@ def create_app() -> FastAPI:
         try:
             return await service.analyze_url(str(request_body.url))
         except InvalidUrlError as exc:
+            logger.info("Analyze rejected invalid URL %s: %s", request_body.url, exc)
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except BlockedUrlError as exc:
+            logger.info("Analyze blocked URL %s: %s", request_body.url, exc)
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except FetchError as exc:
+            logger.warning("Analyze fetch failed for %s: %s", request_body.url, exc, exc_info=True)
             raise HTTPException(status_code=502, detail=str(exc)) from exc
         except ExtractionError as exc:
+            logger.warning("Analyze extraction failed for %s: %s", request_body.url, exc, exc_info=True)
             raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     @app.get("/", include_in_schema=False)

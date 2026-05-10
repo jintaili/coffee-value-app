@@ -8,7 +8,10 @@ from urllib.parse import urlparse
 import httpx
 
 
-DEFAULT_USER_AGENT = "CoffeeValueApp/0.1 (+https://example.invalid/coffee-value-app)"
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
 DEFAULT_TIMEOUT_SECONDS = 10.0
 DEFAULT_MAX_BYTES = 2_000_000
 DEFAULT_MAX_REDIRECTS = 5
@@ -85,7 +88,11 @@ async def fetch_product_page(
         follow_redirects=True,
         max_redirects=max_redirects,
         timeout=httpx.Timeout(timeout_seconds),
-        headers={"User-Agent": DEFAULT_USER_AGENT, "Accept": "text/html,application/xhtml+xml"},
+        headers={
+            "User-Agent": DEFAULT_USER_AGENT,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
     ) as client:
         try:
             async with client.stream("GET", url) as response:
@@ -145,4 +152,3 @@ def _ip_is_blocked(address: str) -> bool:
             ip.is_unspecified,
         ]
     )
-
