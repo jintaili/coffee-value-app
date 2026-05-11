@@ -1,6 +1,6 @@
 {
   "config": {
-    "encoder": "tfidf_embed",
+    "encoder": "tfidf",
     "model": "ridge",
     "structured_fields": [
       "origin_country",
@@ -23,32 +23,26 @@
       "sensory_text",
       "producer_text"
     ],
-    "embed_model": "sentence-transformers/all-MiniLM-L6-v2",
-    "embed_text_fields": [
-      "sensory_text",
-      "producer_text"
-    ],
-    "embed_dim": 384,
     "alpha": 1.0
   },
   "metrics": {
-    "val_concordance": 0.8910441643350145,
-    "val_spearman": 0.8701495977833817,
-    "val_mae": 1.0495595461309104,
-    "val_rmse": 1.5572274101337262,
-    "val_within_1": 0.6215407629020194,
-    "val_within_2": 0.868362004487659
+    "val_concordance": 0.8900181525167841,
+    "val_spearman": 0.8691092295578506,
+    "val_mae": 1.0745119045789797,
+    "val_rmse": 1.654510190618891,
+    "val_within_1": 0.6043380703066566,
+    "val_within_2": 0.8758414360508602
   },
   "train_metrics": {
-    "train_concordance": 0.9398471667223677,
-    "train_spearman": 0.9348721230448799,
-    "train_mae": 0.721705637294788,
-    "train_rmse": 1.012500658356225,
-    "train_within_1": 0.7648534459994719,
-    "train_within_2": 0.9485080538684975
+    "train_concordance": 0.9349117659277247,
+    "train_spearman": 0.9294358485688468,
+    "train_mae": 0.7832832758042884,
+    "train_rmse": 1.1333482222581133,
+    "train_within_1": 0.7381832585159757,
+    "train_within_2": 0.9342487457090045
   },
   "overfitting": {
-    "concordance_gap": 0.048803002387353134
+    "concordance_gap": 0.04489361341094067
   },
   "feature_coverage_train": {
     "origin_country": {
@@ -169,602 +163,602 @@
       "bucket": "<=89",
       "count": 256,
       "mean_true": 84.9140625,
-      "mean_pred": 85.52077834501517,
-      "mean_error": 0.6067158450151682,
-      "median_error": 0.5511754756600169,
-      "mae": 1.7957003787576409
+      "mean_pred": 85.80951367378691,
+      "mean_error": 0.8954511737869031,
+      "median_error": 0.6563414410104684,
+      "mae": 1.8828820034216673
     },
     {
       "bucket": "90",
       "count": 106,
       "mean_true": 90.0,
-      "mean_pred": 90.28580170503444,
-      "mean_error": 0.2858017050344576,
-      "median_error": 0.6604766531012416,
-      "mae": 1.2217635864586665
+      "mean_pred": 90.24638753113472,
+      "mean_error": 0.2463875311347057,
+      "median_error": 0.5280791097212827,
+      "mae": 1.198310336619942
     },
     {
       "bucket": "91",
       "count": 111,
       "mean_true": 91.0,
-      "mean_pred": 91.35882320193352,
-      "mean_error": 0.35882320193350853,
-      "median_error": 0.4830118212372412,
-      "mae": 0.9946518599598482
+      "mean_pred": 91.38381388454884,
+      "mean_error": 0.3838138845488407,
+      "median_error": 0.5634843292072986,
+      "mae": 1.0701264054150654
     },
     {
       "bucket": "92",
       "count": 199,
       "mean_true": 92.0,
-      "mean_pred": 91.95361304422045,
-      "mean_error": -0.04638695577953954,
-      "median_error": 0.06608453723276853,
-      "mae": 0.8180751459253445
+      "mean_pred": 91.92071201797829,
+      "mean_error": -0.07928798202171809,
+      "median_error": 0.1372257765673197,
+      "mae": 0.8700881837807752
     },
     {
       "bucket": "93",
       "count": 288,
       "mean_true": 93.0,
-      "mean_pred": 92.8090230046734,
-      "mean_error": -0.19097699532659795,
-      "median_error": -0.14525339629945222,
-      "mae": 0.7535101137093467
+      "mean_pred": 92.78294941735118,
+      "mean_error": -0.217050582648832,
+      "median_error": -0.15141923668084445,
+      "mae": 0.7286642292921266
     },
     {
       "bucket": "94",
       "count": 222,
       "mean_true": 94.0,
-      "mean_pred": 93.67985946563351,
-      "mean_error": -0.32014053436648837,
-      "median_error": -0.22526224302642817,
-      "mae": 0.7726306137573713
+      "mean_pred": 93.64724203112286,
+      "mean_error": -0.3527579688771439,
+      "median_error": -0.2432829606652902,
+      "mae": 0.7562595821918945
     },
     {
       "bucket": "95",
       "count": 111,
       "mean_true": 95.0,
-      "mean_pred": 94.39033111107442,
-      "mean_error": -0.6096688889255961,
-      "median_error": -0.3899893988374856,
-      "mae": 0.8835083487456554
+      "mean_pred": 94.34741023156236,
+      "mean_error": -0.6525897684376215,
+      "median_error": -0.5188297645879629,
+      "mae": 0.9186438480396627
     },
     {
       "bucket": ">=96",
       "count": 44,
       "mean_true": 96.27272727272727,
-      "mean_pred": 95.343184008494,
-      "mean_error": -0.9295432642332719,
-      "median_error": -0.8220298799504988,
-      "mae": 1.232891587331134
+      "mean_pred": 95.21544258300582,
+      "mean_error": -1.0572846897214383,
+      "median_error": -0.8075442293499435,
+      "mae": 1.2713126335421157
     }
   ],
   "top_coefficients": {
     "positive": [
       {
-        "feature": "tfidf:12-ounce",
-        "coef": 4.194928439803271
-      },
-      {
         "feature": "tfidf:long",
-        "coef": 3.8249593904700308
-      },
-      {
-        "feature": "tfidf:brittle",
-        "coef": 3.7898529770693004
+        "coef": 5.674700136110507
       },
       {
         "feature": "tfidf:complex",
-        "coef": 3.3891391931654526
+        "coef": 5.01558725854217
       },
       {
-        "feature": "tfidf:dried",
-        "coef": 3.3381803981397566
+        "feature": "tfidf:fruit",
+        "coef": 4.894436349180432
       },
       {
-        "feature": "tfidf:pure",
-        "coef": 3.337758959572151
+        "feature": "tfidf:chocolate",
+        "coef": 4.805635769026482
       },
       {
-        "feature": "emb:sensory_text:382",
-        "coef": 3.3133086076999665
+        "feature": "tfidf:12-ounce",
+        "coef": 4.70865804397413
+      },
+      {
+        "feature": "tfidf:flowers",
+        "coef": 4.290735294376844
       },
       {
         "feature": "tfidf:deeply",
-        "coef": 3.2190760558810565
-      },
-      {
-        "feature": "tfidf:complexity",
-        "coef": 3.137569922257189
-      },
-      {
-        "feature": "emb:sensory_text:271",
-        "coef": 3.004125830100177
-      },
-      {
-        "feature": "emb:sensory_text:297",
-        "coef": 2.960762839975913
+        "coef": 4.081949784449119
       },
       {
         "feature": "tfidf:syrupy",
-        "coef": 2.9507401251613654
+        "coef": 4.00695687250932
       },
       {
-        "feature": "emb:sensory_text:263",
-        "coef": 2.931507479394988
+        "feature": "tfidf:mouthfeel",
+        "coef": 3.805227657105336
       },
       {
-        "feature": "tfidf:95",
-        "coef": 2.867392570239063
+        "feature": "tfidf:complexity",
+        "coef": 3.798715011306157
       },
       {
-        "feature": "tfidf:flavor-saturated",
-        "coef": 2.8611787726165017
+        "feature": "tfidf:juicy",
+        "coef": 3.656899362228535
       },
       {
-        "feature": "emb:sensory_text:207",
-        "coef": 2.8069286775652236
+        "feature": "tfidf:richly",
+        "coef": 3.518083239609477
+      },
+      {
+        "feature": "tfidf:superb",
+        "coef": 3.5051508799790416
+      },
+      {
+        "feature": "tfidf:wine",
+        "coef": 3.4937069718494795
+      },
+      {
+        "feature": "tfidf:pure",
+        "coef": 3.47644786045303
+      },
+      {
+        "feature": "tfidf:floral",
+        "coef": 3.386752176416526
+      },
+      {
+        "feature": "tfidf:rich",
+        "coef": 3.343455625576183
       },
       {
         "feature": "tfidf:deep",
-        "coef": 2.745108473710361
+        "coef": 3.3029991535802847
       },
       {
-        "feature": "emb:sensory_text:154",
-        "coef": 2.7068637505685387
-      },
-      {
-        "feature": "emb:sensory_text:228",
-        "coef": 2.7011241437939923
-      },
-      {
-        "feature": "emb:producer_text:287",
-        "coef": 2.6410313110017363
-      },
-      {
-        "feature": "emb:sensory_text:5",
-        "coef": 2.6220247848950176
-      },
-      {
-        "feature": "emb:sensory_text:253",
-        "coef": 2.6140384393440272
+        "feature": "tfidf:balanced",
+        "coef": 3.25836979873379
       },
       {
         "feature": "tfidf:intense",
-        "coef": 2.599844060656377
+        "coef": 3.2204278106890363
       },
       {
-        "feature": "emb:sensory_text:17",
-        "coef": 2.536429569108363
+        "feature": "tfidf:cocoa",
+        "coef": 3.1415186953094527
       },
       {
-        "feature": "emb:sensory_text:369",
-        "coef": 2.5215659789039298
+        "feature": "tfidf:lush",
+        "coef": 2.939283268111723
       },
       {
-        "feature": "tfidf:would",
-        "coef": 2.4867306708745716
+        "feature": "tfidf:big",
+        "coef": 2.922714640402442
       },
       {
-        "feature": "tfidf:score",
-        "coef": 2.42642949925594
+        "feature": "tfidf:flavor-saturated",
+        "coef": 2.915744543347891
       },
       {
-        "feature": "tfidf:92",
-        "coef": 2.39819552104763
-      },
-      {
-        "feature": "emb:sensory_text:260",
-        "coef": 2.392318280270581
-      },
-      {
-        "feature": "tfidf:almond brittle",
-        "coef": 2.3876296223678453
-      },
-      {
-        "feature": "tfidf:93",
-        "coef": 2.3583023010099224
+        "feature": "tfidf:or call",
+        "coef": 2.907748307537739
       },
       {
         "feature": "tfidf:complete",
-        "coef": 2.3359633456403888
+        "coef": 2.9025757136786536
       },
       {
-        "feature": "tfidf:extraordinary",
-        "coef": 2.3339546888048757
-      },
-      {
-        "feature": "emb:sensory_text:198",
-        "coef": 2.3227241559738636
-      },
-      {
-        "feature": "emb:sensory_text:133",
-        "coef": 2.2940755105962674
-      },
-      {
-        "feature": "tfidf:cherry",
-        "coef": 2.2936612806844665
+        "feature": "tfidf:syrupy mouthfeel",
+        "coef": 2.893379532772034
       },
       {
         "feature": "tfidf:flavor-saturated finish",
-        "coef": 2.2908127870282984
+        "coef": 2.8572362241664178
       },
       {
-        "feature": "emb:sensory_text:60",
-        "coef": 2.270860350051582
+        "feature": "tfidf:kenya",
+        "coef": 2.8053973038574815
       },
       {
-        "feature": "emb:sensory_text:330",
-        "coef": 2.259201947671332
+        "feature": "tfidf:com or",
+        "coef": 2.7694029513636
+      },
+      {
+        "feature": "tfidf:extraordinary",
+        "coef": 2.7674938323360183
+      },
+      {
+        "feature": "tfidf:cherry",
+        "coef": 2.7597406053160483
+      },
+      {
+        "feature": "tfidf:elegant",
+        "coef": 2.7227746056536115
+      },
+      {
+        "feature": "tfidf:review",
+        "coef": 2.7035636702325374
       },
       {
         "feature": "tfidf:powerful",
-        "coef": 2.2365497379720134
+        "coef": 2.6756293761207663
+      },
+      {
+        "feature": "tfidf:acidity",
+        "coef": 2.6541878089599993
+      },
+      {
+        "feature": "tfidf:and complexity",
+        "coef": 2.6309570351202027
+      },
+      {
+        "feature": "tfidf:visit www",
+        "coef": 2.628140112625404
+      },
+      {
+        "feature": "tfidf:exquisitely",
+        "coef": 2.6145268628910614
+      },
+      {
+        "feature": "tfidf:fine",
+        "coef": 2.6024110845414987
       }
     ],
     "negative": [
       {
-        "feature": "tfidf:hard",
-        "coef": -8.064852044976021
+        "feature": "tfidf:flat",
+        "coef": -11.158723645068422
       },
       {
-        "feature": "tfidf:flat",
-        "coef": -8.045427656346904
+        "feature": "tfidf:hard",
+        "coef": -11.064220885443218
       },
       {
         "feature": "tfidf:burned",
-        "coef": -6.231260109531802
+        "coef": -9.673722160710987
       },
       {
         "feature": "tfidf:carbon",
-        "coef": -6.059373863744273
+        "coef": -8.353332110059732
       },
       {
         "feature": "tfidf:pre-ground",
-        "coef": -5.299062060448035
+        "coef": -8.106769953355936
       },
       {
         "feature": "tfidf:3",
-        "coef": -5.106573811962278
-      },
-      {
-        "feature": "tfidf:woody",
-        "coef": -4.518068535652714
-      },
-      {
-        "feature": "tfidf:sharp",
-        "coef": -4.304274368212496
-      },
-      {
-        "feature": "tfidf:astringent",
-        "coef": -3.8307352029488277
-      },
-      {
-        "feature": "tfidf:salty",
-        "coef": -3.8282078284606706
-      },
-      {
-        "feature": "tfidf:not much",
-        "coef": -3.7918199950519638
-      },
-      {
-        "feature": "tfidf:lean",
-        "coef": -3.6557865513332315
-      },
-      {
-        "feature": "tfidf:only",
-        "coef": -3.6270425695531276
+        "coef": -7.34389393892915
       },
       {
         "feature": "tfidf:per",
-        "coef": -3.615344703436902
-      },
-      {
-        "feature": "tfidf:brand",
-        "coef": -3.5946276778421944
-      },
-      {
-        "feature": "tfidf:little",
-        "coef": -3.394526151053681
-      },
-      {
-        "feature": "tfidf:5",
-        "coef": -3.3818013012392734
-      },
-      {
-        "feature": "tfidf:bitter",
-        "coef": -3.3029614435357986
-      },
-      {
-        "feature": "tfidf:pleasant",
-        "coef": -3.2894409769955617
-      },
-      {
-        "feature": "tfidf:muted",
-        "coef": -3.2744679038370914
-      },
-      {
-        "feature": "tfidf:reviewed",
-        "coef": -3.2718158693151813
-      },
-      {
-        "feature": "roaster_country=El Salvador",
-        "coef": -3.2489904477911526
-      },
-      {
-        "feature": "tfidf:me",
-        "coef": -3.2282231934299324
+        "coef": -6.549001210751905
       },
       {
         "feature": "tfidf:taste",
-        "coef": -3.2055936280551864
+        "coef": -6.317571009475548
       },
       {
-        "feature": "tfidf:6",
-        "coef": -3.0712063213185288
+        "feature": "tfidf:sharp",
+        "coef": -5.940804255898313
       },
       {
-        "feature": "tfidf:grace",
-        "coef": -3.062919464948501
+        "feature": "tfidf:woody",
+        "coef": -5.906458849609859
       },
       {
-        "feature": "tfidf:fermented",
-        "coef": -2.9906136030284105
-      },
-      {
-        "feature": "tfidf:pruny",
-        "coef": -2.970093748876791
-      },
-      {
-        "feature": "tfidf:some",
-        "coef": -2.9415327927437684
-      },
-      {
-        "feature": "tfidf:prune",
-        "coef": -2.9170817779217684
-      },
-      {
-        "feature": "tfidf:pungency",
-        "coef": -2.915813056310595
-      },
-      {
-        "feature": "tfidf:the robusta",
-        "coef": -2.9097759238217584
-      },
-      {
-        "feature": "emb:sensory_text:116",
-        "coef": -2.8411011364970555
-      },
-      {
-        "feature": "tfidf:fade",
-        "coef": -2.807453379308206
-      },
-      {
-        "feature": "tfidf:a brand",
-        "coef": -2.7959765612535663
-      },
-      {
-        "feature": "tfidf:ounces",
-        "coef": -2.795939914353544
-      },
-      {
-        "feature": "tfidf:single-serve",
-        "coef": -2.7888751668672724
-      },
-      {
-        "feature": "tfidf:panel",
-        "coef": -2.7746309607431354
+        "feature": "tfidf:5",
+        "coef": -5.902792714114272
       },
       {
         "feature": "tfidf:pound",
-        "coef": -2.7711204522065715
+        "coef": -5.663880777089435
+      },
+      {
+        "feature": "tfidf:me",
+        "coef": -5.511022935009403
+      },
+      {
+        "feature": "tfidf:ounces",
+        "coef": -5.360021162220687
+      },
+      {
+        "feature": "tfidf:salty",
+        "coef": -5.198096868482883
+      },
+      {
+        "feature": "tfidf:pruny",
+        "coef": -4.965891050667513
+      },
+      {
+        "feature": "tfidf:brand",
+        "coef": -4.9240706818488915
+      },
+      {
+        "feature": "tfidf:little",
+        "coef": -4.839978958165274
+      },
+      {
+        "feature": "tfidf:bitter",
+        "coef": -4.745754139223649
+      },
+      {
+        "feature": "tfidf:not much",
+        "coef": -4.51508334796102
+      },
+      {
+        "feature": "tfidf:reviewed",
+        "coef": -4.406727797993044
+      },
+      {
+        "feature": "tfidf:thin",
+        "coef": -4.391670205438765
+      },
+      {
+        "feature": "tfidf:some",
+        "coef": -4.377932142034197
+      },
+      {
+        "feature": "tfidf:muted",
+        "coef": -4.3614824632408515
+      },
+      {
+        "feature": "tfidf:prune",
+        "coef": -4.318756366573211
       },
       {
         "feature": "tfidf:of hot",
-        "coef": -2.7529832505784677
+        "coef": -4.256795934129552
+      },
+      {
+        "feature": "tfidf:panel",
+        "coef": -4.169486406197816
+      },
+      {
+        "feature": "tfidf:per pound",
+        "coef": -4.1482619049917355
+      },
+      {
+        "feature": "tfidf:pleasant",
+        "coef": -4.144926684114956
+      },
+      {
+        "feature": "tfidf:lean",
+        "coef": -4.023151821230398
+      },
+      {
+        "feature": "tfidf:mild",
+        "coef": -3.9805504619558576
+      },
+      {
+        "feature": "tfidf:the coffee",
+        "coef": -3.9776438234284583
+      },
+      {
+        "feature": "tfidf:i",
+        "coef": -3.9566742691612142
+      },
+      {
+        "feature": "tfidf:4",
+        "coef": -3.954027576633475
+      },
+      {
+        "feature": "tfidf:roast",
+        "coef": -3.9264487708666875
+      },
+      {
+        "feature": "tfidf:6",
+        "coef": -3.9109147489544966
+      },
+      {
+        "feature": "tfidf:musty",
+        "coef": -3.8411213116877594
+      },
+      {
+        "feature": "tfidf:others",
+        "coef": -3.8150943806719724
+      },
+      {
+        "feature": "tfidf:perhaps",
+        "coef": -3.785995984415544
+      },
+      {
+        "feature": "tfidf:bag",
+        "coef": -3.7763434525852455
       }
     ]
   },
   "worst_errors": {
     "false_low": [
       {
-        "row_id": "6929",
-        "coffee_name": "Euro-Espresso Blend",
-        "roaster": "Coffee Masters",
-        "rating": 84.0,
-        "prediction": 77.77960841784667,
-        "error": -6.220391582153326
-      },
-      {
-        "row_id": "6864",
-        "coffee_name": "Tuluni Supremo",
-        "roaster": "Cafetera de Chaparral",
-        "rating": 82.0,
-        "prediction": 76.29702097707552,
-        "error": -5.702979022924481
+        "row_id": "7302",
+        "coffee_name": "Santa Fe Plantation Nicargua Maderas",
+        "roaster": "The Gourmet Coffee Bean",
+        "rating": 87.0,
+        "prediction": 79.9688096787229,
+        "error": -7.031190321277094
       },
       {
         "row_id": "5811",
         "coffee_name": "Colombian \u2013 365 Everyday Value",
         "roaster": "Whole Foods Market",
         "rating": 86.0,
-        "prediction": 80.31159903241527,
-        "error": -5.688400967584727
-      },
-      {
-        "row_id": "6281",
-        "coffee_name": "Colombia Tres Santos Micro-Lot Almaguer",
-        "roaster": "Intelligentsia Coffee",
-        "rating": 93.0,
-        "prediction": 87.446849324978,
-        "error": -5.553150675021996
-      },
-      {
-        "row_id": "7302",
-        "coffee_name": "Santa Fe Plantation Nicargua Maderas",
-        "roaster": "The Gourmet Coffee Bean",
-        "rating": 87.0,
-        "prediction": 81.4904656637098,
-        "error": -5.509534336290201
-      },
-      {
-        "row_id": "6302",
-        "coffee_name": "Carte Noire",
-        "roaster": "Gevalia-Tassimo",
-        "rating": 84.0,
-        "prediction": 78.9984852296126,
-        "error": -5.001514770387402
-      },
-      {
-        "row_id": "6340",
-        "coffee_name": "Kenya AA Nyeri Fine Cup",
-        "roaster": "Ancora Coffee Roasters",
-        "rating": 94.0,
-        "prediction": 89.22504174954905,
-        "error": -4.7749582504509505
+        "prediction": 80.75331541323453,
+        "error": -5.246684586765468
       },
       {
         "row_id": "5705",
         "coffee_name": "Bonsai Blend Espresso",
         "roaster": "Velton's Coffee",
         "rating": 94.0,
-        "prediction": 89.64309851356515,
-        "error": -4.35690148643485
+        "prediction": 88.75857220642631,
+        "error": -5.241427793573692
       },
       {
-        "row_id": "7459",
-        "coffee_name": "100% Colombian Whole Bean",
-        "roaster": "Eight O'Clock Coffee",
-        "rating": 90.0,
-        "prediction": 85.82530334409687,
-        "error": -4.1746966559031335
-      },
-      {
-        "row_id": "6856",
-        "coffee_name": "Sumatra Mandheling",
-        "roaster": "Heritage Coffee",
-        "rating": 88.0,
-        "prediction": 83.8699045161514,
-        "error": -4.130095483848606
-      },
-      {
-        "row_id": "7360",
-        "coffee_name": "Marques de Paiva Gourmet Fair Trade French Roast",
-        "roaster": "Bom Dia Cafe",
-        "rating": 88.0,
-        "prediction": 83.95740573690608,
-        "error": -4.042594263093918
+        "row_id": "6281",
+        "coffee_name": "Colombia Tres Santos Micro-Lot Almaguer",
+        "roaster": "Intelligentsia Coffee",
+        "rating": 93.0,
+        "prediction": 87.99823226308357,
+        "error": -5.001767736916435
       },
       {
         "row_id": "6024",
         "coffee_name": "Panama Esmeralda Especial",
         "roaster": "PT's Coffee Roasting Co.",
         "rating": 97.0,
-        "prediction": 92.98041982905033,
-        "error": -4.019580170949666
+        "prediction": 92.26570539361353,
+        "error": -4.73429460638647
       },
       {
-        "row_id": "6158",
-        "coffee_name": "Nicaragua El Progresso COE Lot #1",
-        "roaster": "Torreo Coffee Roasters",
-        "rating": 95.0,
-        "prediction": 90.98205122293531,
-        "error": -4.017948777064689
-      },
-      {
-        "row_id": "7094",
-        "coffee_name": "MJB Hawaiian Blend",
-        "roaster": "Nestle Beverage Company",
-        "rating": 82.0,
-        "prediction": 77.99657999498112,
-        "error": -4.0034200050188815
-      },
-      {
-        "row_id": "5687",
-        "coffee_name": "Burundi Kinyovu",
-        "roaster": "Kaldi's Coffee Roasting",
-        "rating": 95.0,
-        "prediction": 91.04113394919163,
-        "error": -3.9588660508083677
-      },
-      {
-        "row_id": "5413",
-        "coffee_name": "Ethiopia Nekisse",
-        "roaster": "Coffea Roasterie",
-        "rating": 96.0,
-        "prediction": 92.26606427687345,
-        "error": -3.7339357231265495
-      },
-      {
-        "row_id": "8438",
-        "coffee_name": "Pike\u2019s Place Blend",
-        "roaster": "Starbucks Coffee",
-        "rating": 84.0,
-        "prediction": 80.3559852832829,
-        "error": -3.644014716717095
-      },
-      {
-        "row_id": "7519",
-        "coffee_name": "Ethiopia Yirgacheffe Koke",
-        "roaster": "Barismo",
-        "rating": 94.0,
-        "prediction": 90.40340275797503,
-        "error": -3.59659724202497
-      },
-      {
-        "row_id": "7142",
-        "coffee_name": "Green",
-        "roaster": "Santa Barbara",
-        "rating": 78.0,
-        "prediction": 74.43728845845486,
-        "error": -3.5627115415451414
-      },
-      {
-        "row_id": "5804",
-        "coffee_name": "Panama Elida Natural",
-        "roaster": "Klatch Coffee",
-        "rating": 95.0,
-        "prediction": 91.46592988270162,
-        "error": -3.534070117298384
-      },
-      {
-        "row_id": "7492",
-        "coffee_name": "Peggy Sue\u2019s Espresso",
-        "roaster": "Fieldheads Coffee Roasting",
+        "row_id": "7402",
+        "coffee_name": "Jamaica Blue Mountain",
+        "roaster": "Wallenford Blue",
         "rating": 91.0,
-        "prediction": 87.46640508462288,
-        "error": -3.5335949153771224
+        "prediction": 86.48570542362262,
+        "error": -4.514294576377381
       },
       {
-        "row_id": "5990",
-        "coffee_name": "Kenyan Highland Cooperatives",
-        "roaster": "Green Mountain Coffee",
-        "rating": 96.0,
-        "prediction": 92.47099630745913,
-        "error": -3.5290036925408685
+        "row_id": "6856",
+        "coffee_name": "Sumatra Mandheling",
+        "roaster": "Heritage Coffee",
+        "rating": 88.0,
+        "prediction": 83.52574417897144,
+        "error": -4.474255821028564
+      },
+      {
+        "row_id": "6677",
+        "coffee_name": "Kenya Grand Cru",
+        "roaster": "Allegro Coffee",
+        "rating": 93.0,
+        "prediction": 88.5425278591872,
+        "error": -4.457472140812797
       },
       {
         "row_id": "7727",
         "coffee_name": "Bluekoff Single Origin Thai Espresso Blend (A4+A5)",
         "roaster": "Bluekoff Company",
         "rating": 93.0,
-        "prediction": 89.48118235387142,
-        "error": -3.518817646128582
+        "prediction": 88.60743635835233,
+        "error": -4.392563641647669
       },
       {
-        "row_id": "5908",
-        "coffee_name": "Kenya Mamuto",
-        "roaster": "Terroir Coffee",
-        "rating": 97.0,
-        "prediction": 93.51548544166366,
-        "error": -3.4845145583363433
+        "row_id": "6864",
+        "coffee_name": "Tuluni Supremo",
+        "roaster": "Cafetera de Chaparral",
+        "rating": 82.0,
+        "prediction": 77.65675874686436,
+        "error": -4.343241253135645
       },
       {
-        "row_id": "8016",
-        "coffee_name": "Edgar Motta Colombia Pink Bourbon",
-        "roaster": "Sweet Bloom Coffee Roasters",
+        "row_id": "6158",
+        "coffee_name": "Nicaragua El Progresso COE Lot #1",
+        "roaster": "Torreo Coffee Roasters",
+        "rating": 95.0,
+        "prediction": 90.66476543849207,
+        "error": -4.3352345615079315
+      },
+      {
+        "row_id": "8438",
+        "coffee_name": "Pike\u2019s Place Blend",
+        "roaster": "Starbucks Coffee",
+        "rating": 84.0,
+        "prediction": 79.79564434358583,
+        "error": -4.204355656414165
+      },
+      {
+        "row_id": "6929",
+        "coffee_name": "Euro-Espresso Blend",
+        "roaster": "Coffee Masters",
+        "rating": 84.0,
+        "prediction": 79.79795624688256,
+        "error": -4.202043753117437
+      },
+      {
+        "row_id": "4920",
+        "coffee_name": "Maui Mokka Peaberry",
+        "roaster": "Rusty's Hawaiian",
+        "rating": 95.0,
+        "prediction": 90.85318463772192,
+        "error": -4.146815362278076
+      },
+      {
+        "row_id": "6302",
+        "coffee_name": "Carte Noire",
+        "roaster": "Gevalia-Tassimo",
+        "rating": 84.0,
+        "prediction": 79.8788519872344,
+        "error": -4.121148012765602
+      },
+      {
+        "row_id": "5990",
+        "coffee_name": "Kenyan Highland Cooperatives",
+        "roaster": "Green Mountain Coffee",
+        "rating": 96.0,
+        "prediction": 92.03928551906367,
+        "error": -3.960714480936332
+      },
+      {
+        "row_id": "7459",
+        "coffee_name": "100% Colombian Whole Bean",
+        "roaster": "Eight O'Clock Coffee",
+        "rating": 90.0,
+        "prediction": 86.06952401131817,
+        "error": -3.9304759886818346
+      },
+      {
+        "row_id": "5413",
+        "coffee_name": "Ethiopia Nekisse",
+        "roaster": "Coffea Roasterie",
+        "rating": 96.0,
+        "prediction": 92.0845256881144,
+        "error": -3.9154743118856032
+      },
+      {
+        "row_id": "6693",
+        "coffee_name": "Sumatra Mandheling Decaf",
+        "roaster": "CC's Coffee",
+        "rating": 92.0,
+        "prediction": 88.16173536269197,
+        "error": -3.838264637308029
+      },
+      {
+        "row_id": "7492",
+        "coffee_name": "Peggy Sue\u2019s Espresso",
+        "roaster": "Fieldheads Coffee Roasting",
+        "rating": 91.0,
+        "prediction": 87.30444640496141,
+        "error": -3.6955535950385894
+      },
+      {
+        "row_id": "6545",
+        "coffee_name": "Papua New Guinea \u2013 Nadam Estate",
+        "roaster": "The Roasterie",
+        "rating": 92.0,
+        "prediction": 88.42333342652852,
+        "error": -3.576666573471485
+      },
+      {
+        "row_id": "6073",
+        "coffee_name": "Idee Special Stomach Friendly Coffee",
+        "roaster": "J.J. Darboven",
+        "rating": 85.0,
+        "prediction": 81.43959757699334,
+        "error": -3.560402423006664
+      },
+      {
+        "row_id": "6340",
+        "coffee_name": "Kenya AA Nyeri Fine Cup",
+        "roaster": "Ancora Coffee Roasters",
         "rating": 94.0,
-        "prediction": 90.5605934856787,
-        "error": -3.4394065143213055
+        "prediction": 90.45152174695443,
+        "error": -3.548478253045573
+      },
+      {
+        "row_id": "6702",
+        "coffee_name": "Decaf Sumatra",
+        "roaster": "Starbucks Coffee",
+        "rating": 86.0,
+        "prediction": 82.47078768316881,
+        "error": -3.5292123168311917
+      },
+      {
+        "row_id": "5687",
+        "coffee_name": "Burundi Kinyovu",
+        "roaster": "Kaldi's Coffee Roasting",
+        "rating": 95.0,
+        "prediction": 91.5853795295188,
+        "error": -3.4146204704811964
       }
     ],
     "false_high": [
@@ -773,200 +767,200 @@
         "coffee_name": "Classic Roast Instant Coffee",
         "roaster": "Folgers",
         "rating": 52.0,
-        "prediction": 74.13511115908422,
-        "error": 22.135111159084218
+        "prediction": 77.08026363392327,
+        "error": 25.080263633923266
       },
       {
         "row_id": "7167",
         "coffee_name": "Dominican Republic \u2013 Green",
         "roaster": "Americo, Melo & Co.",
         "rating": 68.0,
-        "prediction": 77.85855107920067,
-        "error": 9.858551079200666
-      },
-      {
-        "row_id": "7231",
-        "coffee_name": "Mild Roast",
-        "roaster": "Hills Bros.",
-        "rating": 74.0,
-        "prediction": 79.90117228755116,
-        "error": 5.901172287551162
-      },
-      {
-        "row_id": "5253",
-        "coffee_name": "100% Colombia Instant Coffee",
-        "roaster": "Trader Joe's",
-        "rating": 73.0,
-        "prediction": 78.65263887491784,
-        "error": 5.652638874917841
-      },
-      {
-        "row_id": "7230",
-        "coffee_name": "Dark Roast",
-        "roaster": "Caf\u00e9 Bustelo",
-        "rating": 73.0,
-        "prediction": 78.60666456142599,
-        "error": 5.606664561425987
+        "prediction": 80.12018237177006,
+        "error": 12.120182371770056
       },
       {
         "row_id": "7140",
         "coffee_name": "Maxwell House Master Blend",
         "roaster": "Kraft Foods",
         "rating": 65.0,
-        "prediction": 70.38028377604782,
-        "error": 5.380283776047818
-      },
-      {
-        "row_id": "7084",
-        "coffee_name": "Pacamara El 98 \u2013 Green",
-        "roaster": "Larin",
-        "rating": 79.0,
-        "prediction": 84.21160376409756,
-        "error": 5.2116037640975605
+        "prediction": 73.19691184158613,
+        "error": 8.196911841586129
       },
       {
         "row_id": "7121",
         "coffee_name": "Traditional Roast",
         "roaster": "Gevalia",
         "rating": 74.0,
-        "prediction": 79.1701641924802,
-        "error": 5.1701641924802
+        "prediction": 81.93358766832779,
+        "error": 7.933587668327789
       },
       {
-        "row_id": "5032",
-        "coffee_name": "Espresso Blend",
-        "roaster": "Hevla Coffee",
-        "rating": 79.0,
-        "prediction": 83.8074292223919,
-        "error": 4.807429222391903
-      },
-      {
-        "row_id": "7649",
-        "coffee_name": "Organic Premium",
-        "roaster": "Yuban",
+        "row_id": "7231",
+        "coffee_name": "Mild Roast",
+        "roaster": "Hills Bros.",
         "rating": 74.0,
-        "prediction": 78.65588582397365,
-        "error": 4.655885823973648
+        "prediction": 81.86562307707706,
+        "error": 7.8656230770770605
       },
       {
-        "row_id": "6505",
-        "coffee_name": "Organic Andes Gold Peru",
-        "roaster": "Moore Coffee",
-        "rating": 81.0,
-        "prediction": 85.49068263840275,
-        "error": 4.490682638402745
+        "row_id": "7178",
+        "coffee_name": "Brazilian",
+        "roaster": "Ink Coffee",
+        "rating": 78.0,
+        "prediction": 84.9991806645059,
+        "error": 6.9991806645059
       },
       {
-        "row_id": "6351",
-        "coffee_name": "Ethiopia Yirgacheffe",
-        "roaster": "Ancora Coffee Roasters",
-        "rating": 85.0,
-        "prediction": 89.25854522132234,
-        "error": 4.258545221322336
-      },
-      {
-        "row_id": "2582",
-        "coffee_name": "CBD Coffee Dark Roast",
-        "roaster": "Rooster Roastery",
-        "rating": 84.0,
-        "prediction": 88.17539547220451,
-        "error": 4.175395472204514
-      },
-      {
-        "row_id": "7421",
-        "coffee_name": "Los Lajones Natural Panama",
-        "roaster": "Flying Goat Coffee",
-        "rating": 89.0,
-        "prediction": 93.04439312708496,
-        "error": 4.044393127084959
-      },
-      {
-        "row_id": "6691",
-        "coffee_name": "Costa Rica Tarrazu",
-        "roaster": "CoffeeMaria",
-        "rating": 84.0,
-        "prediction": 87.97637042421485,
-        "error": 3.976370424214849
-      },
-      {
-        "row_id": "7300",
-        "coffee_name": "Sexpresso",
-        "roaster": "Baby's Coffee",
-        "rating": 87.0,
-        "prediction": 90.86497711593422,
-        "error": 3.8649771159342237
-      },
-      {
-        "row_id": "7061",
-        "coffee_name": "Espresso Dolce",
-        "roaster": "PJ's Coffee & Tea",
-        "rating": 79.0,
-        "prediction": 82.81433177859259,
-        "error": 3.8143317785925888
-      },
-      {
-        "row_id": "5256",
-        "coffee_name": "Italian Roast VIA Instant Coffee",
-        "roaster": "Starbucks",
-        "rating": 68.0,
-        "prediction": 71.80774200108016,
-        "error": 3.8077420010801575
-      },
-      {
-        "row_id": "6443",
-        "coffee_name": "Organic Fair Trade Ethiopian Yirgacheffe",
-        "roaster": "The Roasterie",
-        "rating": 86.0,
-        "prediction": 89.78986509367557,
-        "error": 3.789865093675573
-      },
-      {
-        "row_id": "6643",
+        "row_id": "7230",
         "coffee_name": "Dark Roast",
-        "roaster": "Community Coffee",
-        "rating": 84.0,
-        "prediction": 87.66079967225664,
-        "error": 3.660799672256644
-      },
-      {
-        "row_id": "7349",
-        "coffee_name": "Sumatra Mandheling Supergrade",
-        "roaster": "Cuvee Coffee",
-        "rating": 87.0,
-        "prediction": 90.51080475778745,
-        "error": 3.5108047577874544
-      },
-      {
-        "row_id": "6325",
-        "coffee_name": "Costa Rica Organic",
-        "roaster": "A&E Custom Coffee Roastery",
-        "rating": 85.0,
-        "prediction": 88.43147596809084,
-        "error": 3.4314759680908367
+        "roaster": "Caf\u00e9 Bustelo",
+        "rating": 73.0,
+        "prediction": 79.25472370292185,
+        "error": 6.254723702921851
       },
       {
         "row_id": "7182",
         "coffee_name": "Zimbabwe \u2013 Green",
         "roaster": "Kowa",
         "rating": 70.0,
-        "prediction": 73.41327024032164,
-        "error": 3.413270240321637
+        "prediction": 76.07854393443137,
+        "error": 6.078543934431366
       },
       {
-        "row_id": "6154",
-        "coffee_name": "Organic Nicaragua Jinotega",
-        "roaster": "California Coffee Roasters",
+        "row_id": "5256",
+        "coffee_name": "Italian Roast VIA Instant Coffee",
+        "roaster": "Starbucks",
+        "rating": 68.0,
+        "prediction": 74.01041521234261,
+        "error": 6.010415212342608
+      },
+      {
+        "row_id": "7649",
+        "coffee_name": "Organic Premium",
+        "roaster": "Yuban",
+        "rating": 74.0,
+        "prediction": 79.25579892822736,
+        "error": 5.255798928227364
+      },
+      {
+        "row_id": "7143",
+        "coffee_name": "Green",
+        "roaster": "Zacaleu",
+        "rating": 76.0,
+        "prediction": 80.77679369535677,
+        "error": 4.776793695356773
+      },
+      {
+        "row_id": "6505",
+        "coffee_name": "Organic Andes Gold Peru",
+        "roaster": "Moore Coffee",
+        "rating": 81.0,
+        "prediction": 85.70765793166095,
+        "error": 4.707657931660947
+      },
+      {
+        "row_id": "6844",
+        "coffee_name": "Timor Maubesse",
+        "roaster": "Holland Coffee Group",
+        "rating": 79.0,
+        "prediction": 83.64151944070218,
+        "error": 4.641519440702183
+      },
+      {
+        "row_id": "6532",
+        "coffee_name": "Buzzworthy Dark Roast (pod)",
+        "roaster": "Melitta",
+        "rating": 78.0,
+        "prediction": 82.61287745388685,
+        "error": 4.612877453886853
+      },
+      {
+        "row_id": "5253",
+        "coffee_name": "100% Colombia Instant Coffee",
+        "roaster": "Trader Joe's",
+        "rating": 73.0,
+        "prediction": 77.56228782764445,
+        "error": 4.562287827644454
+      },
+      {
+        "row_id": "6443",
+        "coffee_name": "Organic Fair Trade Ethiopian Yirgacheffe",
+        "roaster": "The Roasterie",
         "rating": 86.0,
-        "prediction": 89.41063045173017,
-        "error": 3.410630451730171
+        "prediction": 90.38631701045118,
+        "error": 4.3863170104511795
       },
       {
         "row_id": "7023",
         "coffee_name": "Espresso Roast",
         "roaster": "La Costa Coffee Roasting",
         "rating": 77.0,
-        "prediction": 80.39284623167389,
-        "error": 3.392846231673886
+        "prediction": 81.33978303049388,
+        "error": 4.3397830304938765
+      },
+      {
+        "row_id": "7456",
+        "coffee_name": "Original Premium Coffee",
+        "roaster": "Yuban",
+        "rating": 81.0,
+        "prediction": 85.27997455272651,
+        "error": 4.2799745527265145
+      },
+      {
+        "row_id": "6643",
+        "coffee_name": "Dark Roast",
+        "roaster": "Community Coffee",
+        "rating": 84.0,
+        "prediction": 88.12493705275938,
+        "error": 4.124937052759378
+      },
+      {
+        "row_id": "7150",
+        "coffee_name": "Nicaraguan Maragogipe",
+        "roaster": "Thanksgiving Coffee",
+        "rating": 81.0,
+        "prediction": 85.09434812948042,
+        "error": 4.094348129480423
+      },
+      {
+        "row_id": "6691",
+        "coffee_name": "Costa Rica Tarrazu",
+        "roaster": "CoffeeMaria",
+        "rating": 84.0,
+        "prediction": 87.90370018239507,
+        "error": 3.9037001823950703
+      },
+      {
+        "row_id": "6351",
+        "coffee_name": "Ethiopia Yirgacheffe",
+        "roaster": "Ancora Coffee Roasters",
+        "rating": 85.0,
+        "prediction": 88.85958060120008,
+        "error": 3.8595806012000793
+      },
+      {
+        "row_id": "7061",
+        "coffee_name": "Espresso Dolce",
+        "roaster": "PJ's Coffee & Tea",
+        "rating": 79.0,
+        "prediction": 82.71995091286283,
+        "error": 3.719950912862828
+      },
+      {
+        "row_id": "5974",
+        "coffee_name": "Hacienda La Esmeralda Diamond Mountain",
+        "roaster": "Apres Coffee",
+        "rating": 87.0,
+        "prediction": 90.7079650017295,
+        "error": 3.707965001729505
+      },
+      {
+        "row_id": "7135",
+        "coffee_name": "Ethiopia Longberry Harrar",
+        "roaster": "Oren's Daily Roast",
+        "rating": 81.0,
+        "prediction": 84.64574715319007,
+        "error": 3.6457471531900723
       }
     ]
   }

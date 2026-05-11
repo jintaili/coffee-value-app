@@ -134,7 +134,7 @@ python -m pip install .
 uvicorn coffee_value_app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-The current model artifacts include a sentence-transformer dependency for rating inference. That is fine for local development and larger instances, but memory-constrained hosts may need a lighter TF-IDF-only rating artifact from `coffee-grader`.
+The `lightweight` branch uses TF-IDF/ridge rating inference and ElasticNet price inference, with no sentence-transformer or Torch runtime dependency. It is intended for memory-constrained hosts such as Render Free.
 
 ## Companion Repo
 

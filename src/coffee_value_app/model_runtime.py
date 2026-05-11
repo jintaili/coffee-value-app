@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import hashlib
 import math
 import pickle
 import re
 import sys
+import types
 from collections import Counter
 from pathlib import Path
 
@@ -24,9 +24,6 @@ from coffee_value_app.schemas import (
 ROOT = Path(__file__).resolve().parents[2]
 RATING_MODEL_PATH = ROOT / "artifacts" / "rating" / "model.pkl"
 PRICE_MODEL_PATH = ROOT / "artifacts" / "price" / "model.pkl"
-LOCAL_EMBEDDING_MODELS = {
-    "sentence-transformers/all-MiniLM-L6-v2": ROOT / "artifacts" / "embedding_models" / "all-MiniLM-L6-v2",
-}
 
 STRUCTURED_FIELDS = [
     "origin_country",
@@ -41,7 +38,6 @@ STRUCTURED_FIELDS = [
 ]
 TEXT_FIELDS = ["sensory_text", "producer_text"]
 NGRAM_MAX = 2
-EMBED_BATCH = 64
 
 
 def tokenize(text: str) -> list[str]:
@@ -137,57 +133,6 @@ class FeatureEncoder:
         return sparse.csr_matrix((data, indices, indptr), shape=(len(rows), width))
 
 
-class EmbeddingFeatureEncoder:
-    def _load_model(self):
-        if self._model is None:
-            from sentence_transformers import SentenceTransformer
-
-            self._model = SentenceTransformer(resolve_embedding_model_path(self.model_name))
-        return self._model
-
-    def _embed_texts(self, texts: list[str]) -> np.ndarray:
-        keys = [hashlib.sha1(t.encode("utf-8")).hexdigest() for t in texts]
-        missing_idx = [i for i, key in enumerate(keys) if key not in self._cache]
-        if missing_idx:
-            model = self._load_model()
-            batch = [texts[i] for i in missing_idx]
-            vecs = model.encode(
-                batch,
-                batch_size=EMBED_BATCH,
-                convert_to_numpy=True,
-                show_progress_bar=False,
-                normalize_embeddings=True,
-            )
-            for j, i in enumerate(missing_idx):
-                self._cache[keys[i]] = vecs[j].astype(np.float32)
-        return np.stack([self._cache[key] for key in keys])
-
-    def transform(self, rows: list[dict[str, str]]) -> np.ndarray:
-        n = len(rows)
-        n_struct = len(self.structured_vocab)
-        n_emb = self.embed_dim * len(self.text_fields)
-        out = np.zeros((n, n_struct + n_emb), dtype=np.float32)
-        for i, row in enumerate(rows):
-            for field in STRUCTURED_FIELDS:
-                for idx in emit_indices(self.structured_vocab, field, row.get(field)):
-                    out[i, idx] = 1.0
-        for fi, field in enumerate(self.text_fields):
-            texts = [(row.get(field) or " ") for row in rows]
-            vecs = self._embed_texts(texts)
-            start = n_struct + fi * self.embed_dim
-            out[:, start : start + self.embed_dim] = vecs
-        return out
-
-
-class HybridEncoder:
-    def transform(self, rows: list[dict[str, str]]) -> sparse.csr_matrix:
-        x_tfidf = self.tfidf.transform(rows)
-        x_embed_dense = self.embed.transform(rows)
-        n_struct = len(self.embed.structured_vocab)
-        embed_only = x_embed_dense[:, n_struct:]
-        return sparse.hstack([x_tfidf, sparse.csr_matrix(embed_only.astype(np.float64))], format="csr")
-
-
 class LinearModel:
     def __init__(self, weights: np.ndarray, intercept: float):
         self.weights = weights
@@ -200,9 +145,12 @@ class LinearModel:
 def install_pickle_compatibility_aliases() -> None:
     main = sys.modules["__main__"]
     main.FeatureEncoder = FeatureEncoder
-    main.EmbeddingFeatureEncoder = EmbeddingFeatureEncoder
-    main.HybridEncoder = HybridEncoder
     main.LinearModel = LinearModel
+    for module_name in ("rating_train_lightweight",):
+        module = sys.modules.get(module_name) or types.ModuleType(module_name)
+        module.FeatureEncoder = FeatureEncoder
+        module.LinearModel = LinearModel
+        sys.modules[module_name] = module
 
 
 class ModelService:
@@ -260,15 +208,9 @@ class ModelService:
 
 
 def load_pickle(path: Path):
+    install_pickle_compatibility_aliases()
     with path.open("rb") as f:
         return pickle.load(f)
-
-
-def resolve_embedding_model_path(model_name: str) -> str:
-    local_path = LOCAL_EMBEDDING_MODELS.get(model_name)
-    if local_path and local_path.exists():
-        return str(local_path)
-    return model_name
 
 
 def model_input_row(model_input: ModelInput) -> dict[str, str]:

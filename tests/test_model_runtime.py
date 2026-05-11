@@ -1,12 +1,16 @@
-from coffee_value_app.model_runtime import ROOT, resolve_embedding_model_path
+from coffee_value_app.model_runtime import ModelService, RATING_MODEL_PATH, load_pickle
 
 
-def test_resolve_embedding_model_path_uses_vendored_model() -> None:
-    expected = ROOT / "artifacts" / "embedding_models" / "all-MiniLM-L6-v2"
+def test_rating_artifact_is_lightweight_tfidf_model() -> None:
+    artifact = load_pickle(RATING_MODEL_PATH)
 
-    assert resolve_embedding_model_path("sentence-transformers/all-MiniLM-L6-v2") == str(expected)
+    assert artifact["config"]["encoder"] == "tfidf"
+    assert artifact["config"]["model"] == "ridge"
+    assert artifact["config"]["alpha"] == 1.0
 
 
-def test_resolve_embedding_model_path_leaves_unknown_model_unchanged() -> None:
-    assert resolve_embedding_model_path("sentence-transformers/other-model") == "sentence-transformers/other-model"
+def test_model_service_loads_lightweight_artifacts() -> None:
+    service = ModelService()
 
+    assert service.rating_artifact["config"]["encoder"] == "tfidf"
+    assert service.price_artifact["config"]["model"] == "elasticnet"
