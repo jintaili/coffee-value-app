@@ -1,5 +1,7 @@
 # Worth the Roast?
 
+[Live app](https://coffee-value-app.onrender.com/)
+
 **Worth the Roast?** is an end-to-end inference app for specialty coffee shoppers, with machine learning rating and price models served in the backend. Paste a roaster product URL and the app extracts the coffee's production details, predicts quality and fair price, normalizes currencies and bag sizes, and returns a concise value verdict.
 
 Portfolio highlights:
