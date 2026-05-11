@@ -18,6 +18,7 @@ class Settings:
     extraction_model: str
     web_search_model: str
     max_page_text_chars: int
+    database_url: str | None
 
 
 def load_settings(*, load_env_file: bool = True) -> Settings:
@@ -28,6 +29,7 @@ def load_settings(*, load_env_file: bool = True) -> Settings:
         extraction_model=os.environ.get("OPENAI_EXTRACTION_MODEL", DEFAULT_EXTRACTION_MODEL),
         web_search_model=os.environ.get("OPENAI_WEB_SEARCH_MODEL", DEFAULT_WEB_SEARCH_MODEL),
         max_page_text_chars=parse_int_env("COFFEE_VALUE_MAX_PAGE_TEXT_CHARS", DEFAULT_MAX_PAGE_TEXT_CHARS),
+        database_url=os.environ.get("COFFEE_VALUE_DATABASE_URL") or os.environ.get("DATABASE_URL") or None,
     )
 
 

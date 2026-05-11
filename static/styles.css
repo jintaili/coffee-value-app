@@ -721,6 +721,89 @@ input {
   display: none;
 }
 
+.history-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(680px, calc(100vh - 32px));
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--panel);
+  box-shadow: 0 24px 80px rgba(47, 30, 18, 0.28);
+}
+
+.history-dialog::backdrop {
+  background: rgba(45, 26, 18, 0.28);
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+
+.history-header h2 {
+  border-bottom: 0;
+}
+
+.history-list {
+  display: grid;
+  gap: 0;
+  max-height: 560px;
+  overflow: auto;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.history-item:last-child {
+  border-bottom: 0;
+}
+
+button.history-item {
+  cursor: pointer;
+}
+
+button.history-item:hover {
+  background: var(--panel-soft);
+}
+
+.history-item strong,
+.history-item span {
+  overflow-wrap: anywhere;
+}
+
+.history-item span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.history-status {
+  align-self: start;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.history-status.error {
+  background: var(--red-soft);
+  color: var(--red-dark);
+}
+
 @media (max-width: 1320px) {
   .content-grid,
   .hero-verdict,

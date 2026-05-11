@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import StrEnum
 from typing import Literal
+from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -183,6 +185,19 @@ class AnalyzeResponse(BaseModel):
     model_input: ModelInput
     prediction: PredictionResult
     quality: QualityReport
+
+
+class HistoryResponseItem(BaseModel):
+    id: UUID
+    created_at: datetime
+    url: str
+    status: Literal["ok", "error"]
+    response: AnalyzeResponse | None = None
+    error: str | None = None
+
+
+class HistoryListResponse(BaseModel):
+    items: list[HistoryResponseItem]
 
 
 def normalize_list_value(value: list[str] | str | None) -> list[str]:
