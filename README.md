@@ -1,11 +1,11 @@
 # Worth the Roast?
 
-**Worth the Roast?** is an end-to-end inference app for specialty coffee shoppers. Paste a roaster product URL and the app extracts the coffee's production details, predicts quality and fair price, normalizes currencies and bag sizes, and returns a concise value verdict.
+**Worth the Roast?** is an end-to-end inference app for specialty coffee shoppers, with machine learning rating and price models served in the backend. Paste a roaster product URL and the app extracts the coffee's production details, predicts quality and fair price, normalizes currencies and bag sizes, and returns a concise value verdict.
 
 Portfolio highlights:
 
 - LLM-powered structured extraction from messy real-world product pages, aligned to downstream ML feature schemas.
-- FastAPI inference boundary serving both rating and price models from local artifacts.
+- FastAPI backend serving local machine learning artifacts for rating and fair-price prediction.
 - Production-shaped normalization for package size, currency conversion, roaster country resolution, and extraction quality warnings.
 - Consumer-facing single-page UI with debug visibility into extracted JSON, source snippets, assumptions, and model versions.
 - Deployment-ready Python service with tests, CLI tooling, and Render configuration.
