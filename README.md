@@ -119,9 +119,20 @@ Environment variables are loaded from `.env` in development:
 - `OPENAI_API_KEY`: required for live extraction.
 - `OPENAI_EXTRACTION_MODEL`: structured extraction model.
 - `OPENAI_WEB_SEARCH_MODEL`: optional roaster-country resolver model.
-- `MAX_PAGE_TEXT_CHARS`: page-context budget sent to the extractor.
+- `COFFEE_VALUE_MAX_PAGE_TEXT_CHARS`: page-context budget sent to the extractor.
+- `COFFEE_VALUE_DATABASE_URL`: optional Postgres connection string for query history. Use the Supabase pooled connection string in production. If unset, the app runs normally with history disabled.
 
 See `.env.example` for the current defaults.
+
+## Query History
+
+When `COFFEE_VALUE_DATABASE_URL` or `DATABASE_URL` is set, the API records each `/api/analyze` request in a Postgres `query_history` table. The app creates the table and index on first use, stores compact JSON analysis results, and exposes recent entries at:
+
+```bash
+curl http://127.0.0.1:8000/api/history
+```
+
+For Supabase, keep the connection string server-side in Render environment variables. Do not expose service-role credentials or database URLs in browser JavaScript.
 
 ## Currency Conversion
 
