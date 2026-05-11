@@ -9,6 +9,7 @@ Portfolio highlights:
 - LLM-powered structured extraction from messy real-world product pages, aligned to downstream ML feature schemas.
 - FastAPI backend serving local machine learning artifacts for rating and fair-price prediction.
 - Production-shaped normalization for package size, currency conversion, roaster country resolution, and extraction quality warnings.
+- Optional Supabase/Postgres query history for saving analyzed URLs, responses, and failed attempts.
 - Consumer-facing single-page UI with debug visibility into extracted JSON, source snippets, assumptions, and model versions.
 - Deployment-ready Python service with tests, CLI tooling, and Render configuration.
 
