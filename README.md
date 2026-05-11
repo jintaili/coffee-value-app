@@ -134,7 +134,7 @@ python -m pip install .
 uvicorn coffee_value_app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-The `lightweight` branch uses TF-IDF/ridge rating inference and ElasticNet price inference, with no sentence-transformer or Torch runtime dependency. It is intended for memory-constrained hosts such as Render Free.
+The `lightweight` branch scales back the backend models for easier deployment: TF-IDF/ridge rating inference and ElasticNet price inference, with no sentence-transformer or Torch runtime dependency.
 
 ## Companion Repo
 
