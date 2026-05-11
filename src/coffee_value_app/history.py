@@ -53,20 +53,24 @@ class PostgresHistoryStore:
         return self._insert(url=url, status="error", response=None, error=error)
 
     def list_recent(self, *, limit: int = 25) -> list[HistoryItem]:
-        self._ensure_schema()
-        safe_limit = max(1, min(limit, 100))
-        with self._connect() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    """
-                    select id, created_at, url, status, response, error
-                    from query_history
-                    order by created_at desc
-                    limit %s
-                    """,
-                    (safe_limit,),
-                )
-                rows = cursor.fetchall()
+        try:
+            self._ensure_schema()
+            safe_limit = max(1, min(limit, 100))
+            with self._connect() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        select id, created_at, url, status, response, error
+                        from query_history
+                        order by created_at desc
+                        limit %s
+                        """,
+                        (safe_limit,),
+                    )
+                    rows = cursor.fetchall()
+        except Exception:
+            logger.warning("Could not load query history", exc_info=True)
+            return []
         return [
             HistoryItem(
                 id=row[0],
@@ -133,4 +137,4 @@ class PostgresHistoryStore:
             import psycopg
         except ImportError as exc:
             raise RuntimeError("Install psycopg to enable query history storage") from exc
-        return psycopg.connect(self.database_url, autocommit=False)
+        return psycopg.connect(self.database_url, autocommit=False, prepare_threshold=None)
