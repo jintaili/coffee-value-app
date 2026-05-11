@@ -13,7 +13,7 @@ Portfolio highlights:
 - Consumer-facing single-page UI with debug visibility into extracted JSON, source snippets, assumptions, and model versions.
 - Deployment-ready Python service with tests, CLI tooling, and Render configuration.
 
-This repo is the web application and inference layer. Model training and experiment selection live in the companion `coffee-grader` repo, and automated coffee research workflows live in [`coffee-value-autoresearch`](https://github.com/jintaili/coffee-value-autoresearch).
+This repo is the web application and inference layer. Model training, experiment selection, and automated coffee research workflows live in [`coffee-value-autoresearch`](https://github.com/jintaili/coffee-value-autoresearch).
 
 ## What It Does
 
@@ -152,6 +152,4 @@ The `lightweight` branch scales back the backend models for easier deployment: T
 
 ## Companion Repo
 
-`coffee-grader` contains the model research pipeline, experiment ledgers, selected model notes, and shared feature contract used by this app.
-
-[`coffee-value-autoresearch`](https://github.com/jintaili/coffee-value-autoresearch) contains the automated coffee research workflows that complement this inference app.
+[`coffee-value-autoresearch`](https://github.com/jintaili/coffee-value-autoresearch) contains the model research pipeline, experiment ledgers, selected model notes, shared feature contract, and automated coffee research workflows that complement this inference app.
