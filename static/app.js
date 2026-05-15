@@ -9,8 +9,7 @@ const detailsBody = document.querySelector("#detailsBody");
 const toggleDetails = document.querySelector("#toggleDetails");
 const tabs = document.querySelectorAll(".tab");
 const heroVerdict = document.querySelector("#heroVerdict");
-const historyDialog = document.querySelector("#historyDialog");
-const historyList = document.querySelector("#historyList");
+const aboutDialog = document.querySelector("#aboutDialog");
 
 let currentData = null;
 let currentTab = "json";
@@ -248,49 +247,6 @@ function escapeHtml(value) {
   })[char]);
 }
 
-function formatHistoryDate(value) {
-  if (!value) return "";
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function historyTitle(item) {
-  if (item.response?.coffee?.coffee_name) return item.response.coffee.coffee_name;
-  if (item.error) return item.error;
-  return item.url;
-}
-
-async function openHistory() {
-  historyList.innerHTML = '<div class="history-item"><span>Loading history…</span></div>';
-  historyDialog.showModal();
-  try {
-    const response = await fetch("/api/history?limit=25");
-    if (!response.ok) throw new Error(`History service returned ${response.status}`);
-    const data = await response.json();
-    const items = data.items || [];
-    if (!items.length) {
-      historyList.innerHTML = '<div class="history-item"><span>No saved queries yet.</span></div>';
-      return;
-    }
-    historyList.innerHTML = items.map((item) => `
-      <button class="history-item" type="button" data-url="${escapeHtml(item.url)}">
-        <span>
-          <strong>${escapeHtml(historyTitle(item))}</strong><br />
-          ${escapeHtml(item.url)}<br />
-          ${escapeHtml(formatHistoryDate(item.created_at))}
-        </span>
-        <em class="history-status ${item.status === "error" ? "error" : ""}">${escapeHtml(item.status)}</em>
-      </button>
-    `).join("");
-  } catch (error) {
-    historyList.innerHTML = `<div class="history-item"><span>${escapeHtml(error.message)}</span></div>`;
-  }
-}
-
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const url = urlInput.value.trim();
@@ -347,22 +303,11 @@ toggleDetails.addEventListener("click", () => {
 });
 
 document.querySelector("#aboutButton").addEventListener("click", () => {
-  alert("Worth the Roast? extracts specialty coffee attributes from a roaster product page, predicts rating and fair price, and compares that with the listed price.");
+  aboutDialog.showModal();
 });
 
-document.querySelector("#historyButton").addEventListener("click", () => {
-  openHistory();
-});
-
-document.querySelector("#closeHistory").addEventListener("click", () => {
-  historyDialog.close();
-});
-
-historyList.addEventListener("click", (event) => {
-  const item = event.target.closest(".history-item[data-url]");
-  if (!item) return;
-  urlInput.value = item.dataset.url;
-  historyDialog.close();
+document.querySelector("#closeAbout").addEventListener("click", () => {
+  aboutDialog.close();
 });
 
 render({

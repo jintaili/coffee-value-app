@@ -14,8 +14,7 @@
         <div class="tagline">Specialty coffee price and quality checker</div>
       </div>
       <nav class="nav">
-        <button class="nav-button" type="button" id="historyButton">↺ History</button>
-        <button class="nav-button" type="button" id="aboutButton">ⓘ About</button>
+        <button class="nav-button" type="button" id="aboutButton">ⓘ Project</button>
       </nav>
     </header>
 
@@ -181,12 +180,45 @@
       </div>
     </template>
 
-    <dialog class="history-dialog" id="historyDialog">
-      <div class="history-header">
-        <h2>Query History</h2>
-        <button class="ghost-button" type="button" id="closeHistory">×</button>
+    <dialog class="about-dialog" id="aboutDialog">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Project</span>
+          <h2>Worth the Roast?</h2>
+        </div>
+        <button class="ghost-button" type="button" id="closeAbout" aria-label="Close about dialog">×</button>
       </div>
-      <div class="history-list" id="historyList"></div>
+      <div class="about-body">
+        <p>
+          Worth the Roast? extracts specialty coffee attributes from a roaster product page, predicts
+          rating and fair price, and compares that estimate with the listed price.
+        </p>
+
+        <section class="about-section">
+          <h3>Technical highlights</h3>
+          <ul class="highlight-list">
+            <li>LLM structured extraction from messy product pages into a stable model feature schema.</li>
+            <li>FastAPI inference layer serving local rating and fair-price model artifacts.</li>
+            <li>Currency, bag-size, and roaster-country normalization before prediction.</li>
+            <li>Inspectable provenance through extracted JSON, source snippets, assumptions, and model versions.</li>
+            <li>Render deployment with production configuration separated from browser-facing code.</li>
+          </ul>
+        </section>
+
+        <section class="about-section">
+          <h3>Source</h3>
+          <div class="repo-links">
+            <a href="https://github.com/jintaili/coffee-value-app" target="_blank" rel="noopener noreferrer">
+              <strong>coffee-value-app</strong>
+              <span>Web app and inference service</span>
+            </a>
+            <a href="https://github.com/jintaili/coffee-value-autoresearch" target="_blank" rel="noopener noreferrer">
+              <strong>coffee-value-autoresearch</strong>
+              <span>Model research and automated coffee workflows</span>
+            </a>
+          </div>
+        </section>
+      </div>
     </dialog>
 
     <script src="/static/app.js"></script>
