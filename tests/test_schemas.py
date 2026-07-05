@@ -1,4 +1,12 @@
-from coffee_value_app.schemas import ExtractedCoffee, ExtractedPrice, ProcessMethod, Variety, to_model_input
+from coffee_value_app.schemas import (
+    ExtractedCoffee,
+    ExtractedPrice,
+    ProcessMethod,
+    Variety,
+    map_process_terms,
+    map_variety_terms,
+    to_model_input,
+)
 
 
 def test_model_input_matches_training_field_format() -> None:
@@ -70,3 +78,84 @@ def test_unknown_list_values_are_not_mixed_with_specific_values() -> None:
 
     assert coffee.process_method == [ProcessMethod.WASHED]
     assert coffee.variety == [Variety.GESHA]
+
+
+def test_rare_variety_is_kept_verbatim_and_lumps_to_unknown_for_model() -> None:
+    assert map_variety_terms(["SL-9"]) == [Variety.UNKNOWN]
+    assert map_variety_terms(["Ombligon"]) == [Variety.UNKNOWN]
+
+    coffee = ExtractedCoffee(
+        coffee_name="Gilber Huayllas",
+        roaster="Moonwake",
+        roaster_location=None,
+        roaster_country="United States",
+        origin_country="Peru",
+        origin_region="unknown",
+        process_method=["anaerobic washed"],
+        variety=["SL-9"],
+        producer_or_farm=None,
+        altitude=None,
+        is_blend=False,
+        is_espresso=False,
+        is_decaf=False,
+        sensory_text="",
+        producer_text="",
+        source_snippets=[],
+    )
+    price = ExtractedPrice(
+        listed_price=None,
+        listed_currency=None,
+        bag_size_value=None,
+        bag_size_unit=None,
+        package_grams=None,
+        price_100g_usd=None,
+        assumptions=[],
+    )
+
+    model_input = to_model_input(coffee, price)
+
+    assert coffee.variety == ["SL-9"]
+    assert model_input.variety == "unknown"
+    assert model_input.process_method == "anaerobic|washed"
+
+
+def test_verbatim_process_terms_map_to_training_vocab() -> None:
+    assert map_process_terms(["White Honey"]) == [ProcessMethod.HONEY]
+    assert map_process_terms(["giling basah"]) == [ProcessMethod.WET_HULLED]
+    assert map_process_terms(["72 hour anaerobic natural"]) == [
+        ProcessMethod.ANAEROBIC,
+        ProcessMethod.NATURAL,
+    ]
+    assert map_process_terms(["unknown"]) == [ProcessMethod.UNKNOWN]
+    assert map_process_terms([]) == [ProcessMethod.UNKNOWN]
+
+
+def test_variety_mapping_matches_training_semantics() -> None:
+    assert map_variety_terms(["Geisha"]) == [Variety.GESHA]
+    assert map_variety_terms(["SL 28", "SL-34"]) == [Variety.SL28, Variety.SL34]
+    assert map_variety_terms(["Pink Bourbon"]) == [Variety.PINK_BOURBON, Variety.BOURBON]
+
+
+def test_new_optional_fields_default_for_legacy_payloads() -> None:
+    coffee = ExtractedCoffee(
+        coffee_name=None,
+        roaster=None,
+        roaster_location=None,
+        roaster_country="unknown",
+        origin_country="unknown",
+        origin_region="unknown",
+        process_method=["unknown"],
+        variety=["unknown"],
+        producer_or_farm=None,
+        altitude=None,
+        is_blend=False,
+        is_espresso=False,
+        is_decaf=False,
+        sensory_text="",
+        producer_text="",
+        source_snippets=[],
+    )
+
+    assert coffee.roast_level is None
+    assert coffee.harvest_period is None
+    assert coffee.is_coferment_or_infused is False
