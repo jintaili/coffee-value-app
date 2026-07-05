@@ -46,6 +46,8 @@ class AnalysisService:
         page_text = build_page_context(page.text, page.final_url)
         extraction = await self.extractor.extract(url=page.final_url, page_text=page_text)
         extraction = apply_domain_roaster_country(extraction, page.final_url)
+        if extraction.page_type != "coffee_product":
+            resolve_roaster_country = False
         if resolve_roaster_country and extraction.coffee.roaster_country == UNKNOWN:
             try:
                 resolution = await self.roaster_resolver.resolve(
@@ -63,6 +65,8 @@ class AnalysisService:
         model_input = to_model_input(extraction.coffee, extraction.price)
         return AnalyzeResponse(
             input=AnalyzeRequest(url=page.final_url),
+            page_type=extraction.page_type,
+            is_specialty_coffee=extraction.is_specialty_coffee,
             coffee=extraction.coffee,
             price=extraction.price,
             model_input=model_input,
@@ -81,6 +85,8 @@ class FixtureAnalysisService:
         model_input = to_model_input(extraction.coffee, extraction.price)
         return AnalyzeResponse(
             input=AnalyzeRequest(url=url),
+            page_type=extraction.page_type,
+            is_specialty_coffee=extraction.is_specialty_coffee,
             coffee=extraction.coffee,
             price=extraction.price,
             model_input=model_input,
