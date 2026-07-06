@@ -124,10 +124,10 @@ Extraction guidance:
 - is_blend: true only for clearly labeled blends or multiple producing origins.
 - is_espresso: true only when the product is intended for espresso specifically. If espresso is not the primary method, e.g., it's listed among other extraction methods, this field should be False.
 - is_decaf: true when decaf, decaffeinated, Swiss Water, or similar decaffeination method appears.
-- sensory_text: verbatim tasting/cup/flavor/aroma/body/acidity/finish notes. Prefer product tasting notes over marketing copy. Translate to English if source is not.
+- sensory_text: verbatim tasting/cup/flavor/aroma/body/acidity/finish notes. Prefer product tasting notes over marketing copy. Keep the page's original language; do not translate.
 - display_tasting_notes: concise comma-separated note names for UI display only, usually 3-7 items such as "Mango, jasmine, black tea".
-  Use product tasting notes when present. Translate note names to English if source is not English. Do not include prose, sentence fragments, body/acidity descriptions, or marketing copy.
-- producer_text: verbatim origin, farm, producer, process, variety, altitude, lot, and sourcing details. Translate to English if source is not.
+  Use product tasting notes when present, in the page's original language; do not translate. Do not include prose, sentence fragments, body/acidity descriptions, or marketing copy.
+- producer_text: verbatim origin, farm, producer, process, variety, altitude, lot, and sourcing details. Keep the page's original language; do not translate.
 - page_type: classify the page as coffee_product (roasted coffee for sale), coffee_equipment (machines,
   grinders, gear), other_product, or not_a_product_page. When page_type is not coffee_product, set all coffee
   and price fields to null/unknown/false and extraction_quality to "poor".
