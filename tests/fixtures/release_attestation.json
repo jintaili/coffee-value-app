@@ -1,0 +1,15 @@
+{
+  "artifact_id": "ce68bd4c4e",
+  "prompt_sha256": "f7bc690c2582befd0ecd427a1bf108b49bddd07be50cb962828f4649fe7168e8",
+  "gold_version": "v1",
+  "gold_manifest_frozen_at": "2026-07-07T16:35:52+00:00",
+  "gold_page_count": 42,
+  "verdict": "NOOP_ROOT",
+  "evidence": {
+    "root_gold_composite": 0.892,
+    "gold_noise_std": 0.004012136130649151,
+    "run1": "3 generations, 12 candidates, all rejected: systematic critical-field regressions (variety, listed_price)",
+    "candidate_2f29e944a7": "FAIL: gold +0.0098 but variety 0.948->0.910, listed_price 1.000->0.950"
+  },
+  "attested_at": "2026-07-07T22:40:24+00:00"
+}
