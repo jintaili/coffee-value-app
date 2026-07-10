@@ -1,348 +1,525 @@
 const form = document.querySelector("#analyzeForm");
 const urlInput = document.querySelector("#urlInput");
-const statusText = document.querySelector("#statusText");
-const summaryGrid = document.querySelector("#summaryGrid");
-const badges = document.querySelector("#badges");
-const warningsList = document.querySelector("#warningsList");
-const detailsContent = document.querySelector("#detailsContent");
-const detailsBody = document.querySelector("#detailsBody");
-const toggleDetails = document.querySelector("#toggleDetails");
+const analyzeButton = document.querySelector("#analyzeButton");
+const statusNote = document.querySelector("#statusNote");
+const appraisal = document.querySelector("#appraisal");
+const kicker = document.querySelector("#kicker");
+const verdictHead = document.querySelector("#verdictHead");
+const verdictDek = document.querySelector("#verdictDek");
+const caveat = document.querySelector("#caveat");
+const ledgerTable = document.querySelector("#ledgerTable");
+const recordLog = document.querySelector("#recordLog");
+const appendixContent = document.querySelector("#appendixContent");
+const toggleAppendix = document.querySelector("#toggleAppendix");
 const tabs = document.querySelectorAll(".tab");
-const heroVerdict = document.querySelector("#heroVerdict");
-const aboutDialog = document.querySelector("#aboutDialog");
+
+const UNKNOWN = "unknown";
 
 let currentData = null;
 let currentTab = "json";
+let workingTimer = null;
 
-const formatMoney = (value) => value == null ? "—" : `$${Number(value).toFixed(2)}`;
-const formatNumber = (value, digits = 1) => value == null ? "—" : Number(value).toFixed(digits);
-const titleize = (value) => String(value || "").replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
-const joinList = (value) => Array.isArray(value) && value.length ? value.map(titleize).join(", ") : "—";
-const verdictLabels = {
-  good_value: "Good Value",
-  priced_about_right: "Fair",
-  expensive_for_predicted_quality: "Expensive",
-  insufficient_information: "Insufficient Info",
-  model_not_available: "Unavailable",
-  model_not_available_price_missing: "Unavailable",
-};
-const currencySymbols = {
-  USD: "$",
-  EUR: "€",
-  DKK: "DKK ",
-  GBP: "£",
-  CAD: "CA$",
-  AUD: "A$",
-  JPY: "¥",
-};
+/* ---------- formatting helpers ---------- */
 
-function setProgress(state) {
-  const order = ["fetch", "extract", "predict"];
-  document.querySelectorAll(".step").forEach((step) => {
-    step.classList.remove("active", "done");
-    const index = order.indexOf(step.dataset.step);
-    const current = order.indexOf(state);
-    if (state === "done" || index < current) step.classList.add("done");
-    if (index === current) step.classList.add("active");
-  });
-}
-
-function setLoading(isLoading) {
-  form.querySelector("button").disabled = isLoading;
-  urlInput.disabled = isLoading;
-}
-
-function setResultState(state) {
-  heroVerdict.classList.remove("is-pending", "is-loading", "is-good-value", "is-fair", "is-expensive", "is-insufficient");
-  heroVerdict.classList.add(state);
-}
-
-function addSummaryRow(label, value) {
-  const template = document.querySelector("#summaryRowTemplate");
-  const node = template.content.cloneNode(true);
-  node.querySelector(".row-label").textContent = label;
-  node.querySelector(".row-value").textContent = value || "—";
-  summaryGrid.appendChild(node);
-}
+const isMissing = (value) =>
+  value == null || value === "" || String(value).trim().toLowerCase() === UNKNOWN;
 
 function formatCurrency(value, currency) {
   if (value == null) return "—";
-  const code = currency || "USD";
-  const symbol = currencySymbols[code] || `${code} `;
-  return `${symbol}${Number(value).toFixed(2)}`;
-}
-
-function formatShopListedPrice(price) {
-  if (price.original_listed_price != null && price.original_listed_currency) {
-    return formatCurrency(price.original_listed_price, price.original_listed_currency);
+  const code = (currency || "USD").toUpperCase();
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: code,
+      currencyDisplay: "narrowSymbol",
+    }).format(value);
+  } catch {
+    return `${code} ${Number(value).toFixed(2)}`;
   }
-  return formatCurrency(price.listed_price, price.listed_currency);
 }
 
-function formatListedPriceSubtext(price) {
-  if (price.original_listed_price != null && price.original_listed_currency) {
-    return formatCurrency(price.original_listed_price, price.original_listed_currency);
+const formatUsd = (value) => (value == null ? "—" : formatCurrency(value, "USD"));
+
+const formatNumber = (value, digits = 1) =>
+  value == null || !Number.isFinite(Number(value)) ? "—" : Number(value).toFixed(digits);
+
+function verbatimJoin(values) {
+  if (!Array.isArray(values)) return null;
+  const kept = values.filter((v) => !isMissing(v));
+  return kept.length ? kept.join(", ") : null;
+}
+
+function formatDelta(delta) {
+  if (delta == null) return "—";
+  return `${delta > 0 ? "+" : ""}${Number(delta).toFixed(1)}%`;
+}
+
+function bagDescription(price) {
+  const parts = [];
+  if (price.bag_size_value != null && price.bag_size_unit) {
+    parts.push(`${price.bag_size_value} ${price.bag_size_unit}`);
+  } else if (price.package_grams != null) {
+    parts.push(`${price.package_grams} g`);
   }
-  return price.price_100g_usd == null ? "—" : `${formatMoney(price.price_100g_usd)} / 100g`;
+  if (price.bags_count != null && price.bags_count > 1) parts.push(`× ${price.bags_count} bags`);
+  return parts.join(" ");
 }
 
-function analysisPriceDetails(price) {
-  const details = {
-    listed_price: price.listed_price,
-    listed_currency: price.listed_currency,
-    original_listed_price: price.original_listed_price,
-    original_listed_currency: price.original_listed_currency,
-    price_100g_usd: price.price_100g_usd,
-    bag_size_value: price.bag_size_value,
-    bag_size_unit: price.bag_size_unit,
-    package_grams: price.package_grams,
-    assumptions: price.assumptions,
-  };
-  if (price.listed_currency === "USD") {
-    details.normalized_listed_price_usd = price.listed_price;
+/* ---------- record log ---------- */
+
+function logLine(text, cls = "", timestamp = null) {
+  const line = document.createElement("div");
+  line.className = `line${cls ? ` ${cls}` : ""}`;
+  const t = document.createElement("span");
+  t.className = "t";
+  t.textContent = timestamp == null ? "" : `${timestamp.toFixed(1)}s`;
+  line.appendChild(t);
+  line.appendChild(document.createTextNode(text));
+  recordLog.appendChild(line);
+  return line;
+}
+
+function clearLog() {
+  recordLog.innerHTML = "";
+}
+
+/* ---------- headline copy ---------- */
+
+const PAGE_TYPE_COPY = {
+  coffee_equipment: {
+    head: "That's coffee equipment, not coffee.",
+    dek: "This page looks like a machine, grinder, or other gear listing. The ledger appraises roasted coffee only — paste a bag of beans instead.",
+  },
+  other_product: {
+    head: "That's a product page — but not coffee.",
+    dek: "The extractor read the page and found a product that isn't coffee. Nothing here for the cupping table.",
+  },
+  not_a_product_page: {
+    head: "No single product found on that page.",
+    dek: "This looks like a homepage, article, or collection rather than one product's page. Paste the page for a specific coffee.",
+  },
+};
+
+const VERDICT_COPY = {
+  good_value: { head: "Priced ", em: "below", tail: " its predicted quality.", cls: "good" },
+  priced_about_right: { head: "Priced ", em: "about right", tail: ".", cls: "good" },
+  expensive_for_predicted_quality: { head: "Priced ", em: "well above", tail: " its predicted quality.", cls: "bad" },
+  insufficient_information: { head: "Not enough to ", em: "judge the price", tail: ".", cls: "" },
+};
+
+function setVerdictHead(copy) {
+  verdictHead.innerHTML = "";
+  verdictHead.appendChild(document.createTextNode(copy.head));
+  const em = document.createElement("em");
+  if (copy.cls) em.classList.add(copy.cls);
+  em.textContent = copy.em;
+  verdictHead.appendChild(em);
+  verdictHead.appendChild(document.createTextNode(copy.tail));
+}
+
+function plainHead(text) {
+  verdictHead.innerHTML = "";
+  verdictHead.textContent = text;
+}
+
+function ratingPhrase(predicted) {
+  if (predicted == null) return null;
+  if (predicted >= 90) return "likely excellent";
+  if (predicted >= 86) return "likely very good";
+  if (predicted >= 82) return "solid";
+  return "modest";
+}
+
+/* ---------- rendering ---------- */
+
+function addLedgerRow(label, value, options = {}) {
+  const row = document.createElement("tr");
+  if (options.notes) row.className = "notes";
+  const labelCell = document.createElement("td");
+  labelCell.textContent = label;
+  const valueCell = document.createElement("td");
+  if (isMissing(value)) {
+    const none = document.createElement("span");
+    none.className = "none";
+    none.textContent = "—";
+    valueCell.appendChild(none);
+  } else {
+    valueCell.textContent = value;
   }
-  return details;
+  row.appendChild(labelCell);
+  row.appendChild(valueCell);
+  ledgerTable.appendChild(row);
 }
 
-function renderSummary(data) {
+function renderLedger(data) {
   const coffee = data.coffee;
   const price = data.price;
-  summaryGrid.innerHTML = "";
-  addSummaryRow("Coffee name", coffee.coffee_name);
-  addSummaryRow("Producer", coffee.producer_or_farm);
-  addSummaryRow("Roaster", coffee.roaster);
-  addSummaryRow("Altitude", coffee.altitude);
-  addSummaryRow("Origin", [coffee.origin_country, coffee.origin_region].filter(Boolean).filter((v) => v !== "unknown").join(" · "));
-  addSummaryRow("Tasting notes", coffee.display_tasting_notes || coffee.sensory_text);
-  addSummaryRow("Process", joinList(coffee.process_method));
-  addSummaryRow("Listed price", formatShopListedPrice(price));
-  addSummaryRow("Variety", joinList(coffee.variety));
-  addSummaryRow("Bag size", price.bag_size_value && price.bag_size_unit ? `${price.bag_size_value} ${price.bag_size_unit}` : "—");
-  addSummaryRow("Normalized listed price", price.price_100g_usd == null ? "—" : `${formatMoney(price.price_100g_usd)} / 100g`);
-  addSummaryRow("Roaster country", coffee.roaster_country);
+  ledgerTable.innerHTML = "";
 
-  const badgeValues = [];
-  if (!coffee.is_blend) badgeValues.push("Single Origin");
-  if (coffee.is_blend) badgeValues.push("Blend");
-  if (coffee.is_espresso) badgeValues.push("Espresso Friendly");
-  if (coffee.is_decaf) badgeValues.push("Decaf");
-  if (coffee.altitude) badgeValues.push("Altitude Listed");
-  if (coffee.process_method?.some((v) => v !== "unknown")) badgeValues.push(`${titleize(coffee.process_method[0])} Process`);
-  badges.innerHTML = badgeValues.map((value) => `<span class="pill">${value}</span>`).join("");
+  addLedgerRow("Notes", coffee.display_tasting_notes || coffee.sensory_text, { notes: true });
+  addLedgerRow("Coffee", coffee.coffee_name);
+  addLedgerRow(
+    "Origin",
+    [coffee.origin_country, coffee.origin_region].filter((v) => !isMissing(v)).join(" · ")
+  );
+  addLedgerRow("Producer", coffee.producer_or_farm);
+  addLedgerRow(
+    "Roaster",
+    [coffee.roaster, coffee.roaster_location || coffee.roaster_country]
+      .filter((v) => !isMissing(v))
+      .join(" — ")
+  );
+  addLedgerRow("Process", verbatimJoin(coffee.process_method));
+  addLedgerRow("Variety", verbatimJoin(coffee.variety));
+  addLedgerRow("Altitude", coffee.altitude);
+  if (!isMissing(coffee.roast_level)) addLedgerRow("Roast level", coffee.roast_level);
+  if (!isMissing(coffee.harvest_period)) addLedgerRow("Harvest", coffee.harvest_period);
+  addLedgerRow("Bag", bagDescription(price));
+
+  const remarks = [];
+  remarks.push(coffee.is_blend ? "blend" : "single origin");
+  if (coffee.is_espresso) remarks.push("espresso");
+  if (coffee.is_decaf) remarks.push("decaf");
+  if (coffee.is_coferment_or_infused) remarks.push("co-fermented / infused");
+  if (price.availability && price.availability !== UNKNOWN && price.availability !== "in_stock") {
+    remarks.push(price.availability.replaceAll("_", " "));
+  }
+  addLedgerRow("Remarks", remarks.join(" · "));
 }
 
-function renderPrediction(data) {
-  const rating = data.prediction.rating;
-  const price = data.prediction.price;
-  const listedPrice = data.price;
-  document.querySelector("#predictedRating").textContent = formatNumber(rating.predicted, 1);
-  document.querySelector("#detailPredictedRating").textContent = formatNumber(rating.predicted, 1);
-  document.querySelector("#ratingInterval").textContent = rating.interval_low == null ? "—" : `${formatNumber(rating.interval_low, 1)}–${formatNumber(rating.interval_high, 1)}`;
-  document.querySelector("#predictedBagPrice").textContent = formatMoney(price.predicted_bag_price_usd);
-  document.querySelector("#detailPredictedBagPrice").textContent = formatMoney(price.predicted_bag_price_usd);
-  document.querySelector("#predicted100g").textContent = price.predicted_price_100g_usd == null ? "—" : `${formatMoney(price.predicted_price_100g_usd)} / 100g`;
-  document.querySelector("#detailPredicted100g").textContent = price.predicted_price_100g_usd == null ? "—" : formatMoney(price.predicted_price_100g_usd);
-  document.querySelector("#listedBagPrice").textContent = formatCurrency(listedPrice.listed_price, listedPrice.listed_currency);
-  document.querySelector("#listed100g").textContent = formatListedPriceSubtext(listedPrice);
-  document.querySelector("#priceInterval").textContent = price.interval_low == null ? "—" : `${formatMoney(price.interval_low)}–${formatMoney(price.interval_high)}`;
-  document.querySelector("#modelLine").textContent = `Rating model: ${rating.model_version} · Price model: ${price.model_version}`;
-  document.querySelector("#ratingLabel").textContent = rating.predicted == null ? "—" : rating.predicted >= 90 ? "Excellent quality" : rating.predicted >= 86 ? "High quality" : "Solid quality";
+function renderScore(rating) {
+  document.querySelector("#scoreValue").textContent = formatNumber(rating.predicted, 1);
+  document.querySelector("#scoreGrade").textContent =
+    rating.predicted == null ? "no prediction" : `${ratingPhrase(rating.predicted)} quality`;
+  document.querySelector("#scoreInterval").textContent =
+    rating.interval_low == null
+      ? ""
+      : `${formatNumber(rating.interval_low, 1)} – ${formatNumber(rating.interval_high, 1)} interval`;
 }
 
-function renderVerdict(data) {
-  const value = data.prediction.value;
-  const verdict = verdictLabels[value.verdict] || titleize(value.verdict);
-  document.querySelector("#verdictText").textContent = verdict;
-  const delta = value.listed_vs_predicted_delta_pct;
-  const state = delta == null ? "is-insufficient" : delta < -20 ? "is-good-value" : delta > 20 ? "is-expensive" : "is-fair";
-  setResultState(state);
-  const copy = delta == null
-    ? "The app needs both listed price and predicted fair price to judge value."
-    : `Listed price is ${Math.abs(delta).toFixed(1)}% ${delta >= 0 ? "above" : "below"} predicted fair price.`;
-  document.querySelector("#verdictCopy").textContent = copy;
-  document.querySelector("#pricePremium").textContent = delta == null ? "—" : `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;
-  document.querySelector("#pricePremium").classList.toggle("is-expensive", delta != null && delta > 20);
-  document.querySelector("#pricePremium").classList.toggle("is-value", delta != null && delta < -20);
-  const needleDeg = delta == null ? 0 : Math.max(-62, Math.min(62, delta * 1.25));
-  document.querySelector("#needle").setAttribute("transform", `rotate(${needleDeg} 130 115)`);
+function renderTariff(data) {
+  const price = data.price;
+  const prediction = data.prediction.price;
+  const delta = data.prediction.value.listed_vs_predicted_delta_pct;
+
+  const original =
+    price.original_listed_price != null && price.original_listed_currency
+      ? formatCurrency(price.original_listed_price, price.original_listed_currency)
+      : null;
+  document.querySelector("#listedAmt").textContent =
+    original || formatCurrency(price.listed_price, price.listed_currency);
+
+  const listedMeta = [];
+  const bag = bagDescription(price);
+  if (bag) listedMeta.push(bag);
+  if (price.price_100g_usd != null) listedMeta.push(`${formatUsd(price.price_100g_usd)} / 100 g`);
+  if (original && price.listed_price != null) listedMeta.push(`${formatUsd(price.listed_price)} converted`);
+  if (price.price_type && price.price_type !== UNKNOWN && price.price_type !== "one_time") {
+    listedMeta.push(`${price.price_type} price`);
+  }
+  document.querySelector("#listedMeta").textContent = listedMeta.join(" · ") || "not found on page";
+
+  const fairMain =
+    prediction.predicted_bag_price_usd != null
+      ? formatUsd(prediction.predicted_bag_price_usd)
+      : prediction.predicted_price_100g_usd != null
+        ? `${formatUsd(prediction.predicted_price_100g_usd)}`
+        : "—";
+  document.querySelector("#fairAmt").textContent = fairMain;
+
+  const fairMeta = [];
+  if (prediction.predicted_bag_price_usd != null && prediction.predicted_price_100g_usd != null) {
+    fairMeta.push(`${formatUsd(prediction.predicted_price_100g_usd)} / 100 g`);
+  } else if (prediction.predicted_price_100g_usd != null) {
+    fairMeta.push("per 100 g — bag size unknown");
+  }
+  if (prediction.interval_low != null) {
+    fairMeta.push(`${formatUsd(prediction.interval_low)}–${formatUsd(prediction.interval_high)} / 100 g interval`);
+  }
+  document.querySelector("#fairMeta").textContent = fairMeta.join(" · ") || "no prediction";
+
+  const premium = document.querySelector("#premiumAmt");
+  premium.textContent = formatDelta(delta);
+  premium.classList.remove("delta-over", "delta-under");
+  if (delta != null && delta > 20) premium.classList.add("delta-over");
+  if (delta != null && delta < -20) premium.classList.add("delta-under");
+
+  const footParts = (price.assumptions || []).slice();
+  footParts.push("non-USD prices converted at live Frankfurter rates before prediction");
+  document.querySelector("#tariffFoot").textContent = footParts.join(" · ");
 }
 
-function renderQuality(data) {
-  const quality = data.quality;
+function renderRecord(data, elapsedSeconds) {
+  clearLog();
+  const coffee = data.coffee;
+  const quality = data.quality || {};
   const missing = quality.missing_fields || [];
   const warnings = quality.warnings || [];
   const assumptions = data.price.assumptions || [];
-  const completeness = Math.max(0, Math.round((1 - missing.length / 12) * 100));
 
-  document.querySelector("#qualityValue").textContent = titleize(quality.extraction_quality);
-  document.querySelector("#completenessValue").textContent = `${completeness}%`;
-  document.querySelector("#missingValue").textContent = missing.length ? String(missing.length) : "None";
-  document.querySelector("#warningValue").textContent = String(warnings.length);
+  logLine(`GET ${data.input?.url || urlInput.value.trim()}`, "", 0);
+  logLine(
+    `page_type = ${data.page_type} · specialty = ${
+      data.is_specialty_coffee == null ? "unclear" : data.is_specialty_coffee ? "yes" : "no"
+    }`,
+    data.page_type === "coffee_product" ? "ok" : "warn"
+  );
 
-  const items = [];
-  if (!warnings.length && !missing.length) items.push({ text: "No major extraction issues detected", warn: false });
-  warnings.forEach((text) => items.push({ text, warn: true }));
-  missing.forEach((text) => items.push({ text: `Missing ${text}`, warn: true }));
-  assumptions.forEach((text) => items.push({ text, warn: false }));
-  warningsList.innerHTML = items.map((item) => `<span class="inline-item ${item.warn ? "warn" : ""}">${escapeHtml(item.text)}</span>`).join("");
+  if (data.page_type === "coffee_product") {
+    logLine(`extract ok · quality ${quality.extraction_quality || "?"}`, "ok");
+    const seen = [];
+    if (!isMissing(coffee.origin_country)) {
+      seen.push(`origin ${[coffee.origin_country, coffee.origin_region].filter((v) => !isMissing(v)).join(" / ")}`);
+    }
+    const process = verbatimJoin(coffee.process_method);
+    if (process) seen.push(`process ${process}`);
+    const variety = verbatimJoin(coffee.variety);
+    if (variety) seen.push(`variety ${variety}`);
+    if (seen.length) logLine(seen.join(" · "), "dim");
+  } else {
+    logLine("prediction withheld — page is not a coffee product", "warn");
+  }
+
+  warnings.forEach((text) => logLine(`warn ${text}`, "warn"));
+  missing.forEach((field) => logLine(`missing ${field}`, "warn"));
+  assumptions.forEach((text) => logLine(`assume ${text}`, "warn"));
+
+  if (data.page_type === "coffee_product") {
+    const price = data.price;
+    if (price.price_100g_usd != null) {
+      const source =
+        price.original_listed_price != null && price.original_listed_currency
+          ? formatCurrency(price.original_listed_price, price.original_listed_currency)
+          : formatCurrency(price.listed_price, price.listed_currency);
+      logLine(`normalize ${source} → ${formatUsd(price.price_100g_usd)} / 100 g`, "ok");
+    }
+    const rating = data.prediction.rating;
+    const pricePred = data.prediction.price;
+    logLine(
+      `predict rating ${formatNumber(rating.predicted, 1)} [${formatNumber(rating.interval_low, 1)}–${formatNumber(
+        rating.interval_high,
+        1
+      )}] · fair ${
+        pricePred.predicted_price_100g_usd == null ? "—" : `${formatUsd(pricePred.predicted_price_100g_usd)}/100g`
+      } · verdict ${data.prediction.value.verdict}`,
+      "ok"
+    );
+    logLine(`models ${rating.model_version} · ${pricePred.model_version}`, "dim");
+  }
+
+  logLine(`done · ${elapsedSeconds.toFixed(1)}s total (fetch + extract + predict)`, "", elapsedSeconds);
 }
 
-function renderDetails() {
+function renderAppendix() {
   if (!currentData) {
-    detailsContent.textContent = "{}";
+    appendixContent.textContent = "{}";
     return;
   }
   if (currentTab === "json") {
-    detailsContent.textContent = JSON.stringify({
-      coffee: currentData.coffee,
-      price: analysisPriceDetails(currentData.price),
-      model_input: currentData.model_input,
-      prediction: currentData.prediction,
-      quality: currentData.quality,
-    }, null, 2);
+    appendixContent.textContent = JSON.stringify(
+      {
+        api_version: currentData.api_version,
+        page_type: currentData.page_type,
+        is_specialty_coffee: currentData.is_specialty_coffee,
+        coffee: currentData.coffee,
+        price: currentData.price,
+        prediction: currentData.prediction,
+        quality: currentData.quality,
+      },
+      null,
+      2
+    );
   } else if (currentTab === "snippets") {
-    detailsContent.textContent = JSON.stringify(currentData.coffee.source_snippets || [], null, 2);
-  } else if (currentTab === "missing") {
-    detailsContent.textContent = JSON.stringify(currentData.quality.missing_fields || [], null, 2);
-  } else if (currentTab === "versions") {
-    detailsContent.textContent = JSON.stringify({
-      api_version: currentData.api_version,
-      rating_model: currentData.prediction.rating.model_version,
-      price_model: currentData.prediction.price.model_version,
-    }, null, 2);
+    appendixContent.textContent = JSON.stringify(currentData.coffee?.source_snippets || [], null, 2);
+  } else if (currentTab === "input") {
+    appendixContent.textContent = JSON.stringify(currentData.model_input || {}, null, 2);
   }
 }
 
-function render(data) {
+function renderCoffeeResult(data) {
+  appraisal.classList.remove("no-result");
+  const coffee = data.coffee;
+  const rating = data.prediction.rating;
+  const verdict = data.prediction.value.verdict;
+  const delta = data.prediction.value.listed_vs_predicted_delta_pct;
+
+  const kickerParts = ["The Verdict"];
+  const name = [coffee.coffee_name, isMissing(coffee.origin_country) ? null : coffee.origin_country]
+    .filter(Boolean)
+    .join(", ");
+  if (name) kickerParts.push(name);
+  kicker.textContent = kickerParts.join(" · ");
+
+  setVerdictHead(VERDICT_COPY[verdict] || { head: "", em: verdict.replaceAll("_", " "), tail: ".", cls: "" });
+
+  verdictDek.innerHTML = "";
+  if (delta != null) {
+    const spanIntro = document.createTextNode("The listed price sits ");
+    const strong = document.createElement("strong");
+    strong.className = delta >= 0 ? "delta-over" : "delta-under";
+    strong.textContent = `${Math.abs(delta).toFixed(1)}% ${delta >= 0 ? "above" : "below"}`;
+    verdictDek.appendChild(spanIntro);
+    verdictDek.appendChild(strong);
+    verdictDek.appendChild(document.createTextNode(" the model's fair estimate. "));
+  } else {
+    verdictDek.appendChild(
+      document.createTextNode("The ledger needs both a listed price and a fair-price prediction to judge value. ")
+    );
+  }
+  const phrase = ratingPhrase(rating.predicted);
+  if (phrase) {
+    verdictDek.appendChild(
+      document.createTextNode(
+        `Predicted quality of ${formatNumber(rating.predicted, 1)} suggests a ${phrase} cup.`
+      )
+    );
+  }
+
+  if (data.is_specialty_coffee === false) {
+    caveat.textContent =
+      "Caveat: this looks like commodity rather than specialty coffee. The models are trained on specialty lots — read this appraisal skeptically.";
+    caveat.classList.remove("hidden");
+  }
+
+  renderScore(rating);
+  renderLedger(data);
+  renderTariff(data);
+}
+
+function renderNonCoffee(data) {
+  appraisal.classList.add("no-result");
+  kicker.textContent = "No Appraisal";
+  const copy = PAGE_TYPE_COPY[data.page_type] || {
+    head: "The ledger declined this page.",
+    dek: "The extractor could not treat this page as a coffee product.",
+  };
+  plainHead(copy.head);
+  verdictDek.textContent = `${copy.dek} Recognizing non-coffee pages (instead of hallucinating a coffee) is part of the extraction contract.`;
+}
+
+function render(data, elapsedSeconds) {
   currentData = data;
-  renderSummary(data);
-  renderPrediction(data);
-  renderVerdict(data);
-  renderQuality(data);
-  renderDetails();
+  appraisal.classList.remove("is-pending");
+  caveat.classList.add("hidden");
+  if (data.page_type === "coffee_product") {
+    renderCoffeeResult(data);
+  } else {
+    renderNonCoffee(data);
+  }
+  renderRecord(data, elapsedSeconds);
+  renderAppendix();
 }
 
-function renderPendingHero() {
-  setResultState("is-pending");
-  document.querySelector("#verdictText").textContent = "Awaiting analysis";
-  document.querySelector("#verdictCopy").textContent = "Results are not finalized until you analyze a product URL.";
-  document.querySelector("#predictedRating").textContent = "—";
-  document.querySelector("#ratingLabel").textContent = "Pending";
-  document.querySelector("#predictedBagPrice").textContent = "—";
-  document.querySelector("#predicted100g").textContent = "—";
-  document.querySelector("#listedBagPrice").textContent = "—";
-  document.querySelector("#listed100g").textContent = "—";
-  document.querySelector("#pricePremium").textContent = "—";
-  document.querySelector("#pricePremium").classList.remove("is-expensive", "is-value");
-  document.querySelector("#needle").setAttribute("transform", "rotate(0 130 115)");
+function renderError(message, elapsedSeconds) {
+  currentData = null;
+  recordLog.querySelectorAll(".working").forEach((el) => el.classList.remove("working"));
+  appraisal.classList.remove("is-pending");
+  appraisal.classList.add("no-result");
+  kicker.textContent = "No Appraisal";
+  plainHead("The appraisal failed.");
+  verdictDek.textContent = message;
+  caveat.classList.add("hidden");
+  logLine(`error ${message}`, "err", elapsedSeconds);
+  renderAppendix();
 }
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  })[char]);
+/* ---------- submit flow ---------- */
+
+function startLoading(url) {
+  appraisal.classList.remove("hidden", "no-result");
+  appraisal.classList.add("is-pending");
+  caveat.classList.add("hidden");
+  kicker.textContent = "In Progress";
+  plainHead("Appraising…");
+  verdictDek.textContent = "Fetching the page, extracting details, and running the models.";
+  analyzeButton.disabled = true;
+  urlInput.disabled = true;
+  statusNote.classList.remove("is-error");
+
+  clearLog();
+  logLine(`POST /api/analyze ${url}`, "", 0);
+  const working = logLine("fetch · extract · normalize · predict", "dim working");
+  const startedAt = performance.now();
+  workingTimer = setInterval(() => {
+    const seconds = (performance.now() - startedAt) / 1000;
+    statusNote.textContent = `appraising — ${seconds.toFixed(0)}s elapsed`;
+  }, 1000);
+  statusNote.textContent = "appraising — 0s elapsed";
+  return { startedAt, working };
+}
+
+function stopLoading() {
+  clearInterval(workingTimer);
+  workingTimer = null;
+  analyzeButton.disabled = false;
+  urlInput.disabled = false;
 }
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const url = urlInput.value.trim();
   if (!url) return;
-  setLoading(true);
-  setResultState("is-loading");
-  document.querySelector("#verdictText").textContent = "Analysis in progress";
-  document.querySelector("#verdictCopy").textContent = "Displayed results are not finalized for this URL yet.";
-  setProgress("fetch");
-  statusText.textContent = "Fetching page and preparing extraction context.";
+  const { startedAt } = startLoading(url);
+  let elapsed = 0;
   try {
-    setProgress("extract");
     const response = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     });
-    setProgress("predict");
+    elapsed = (performance.now() - startedAt) / 1000;
     if (!response.ok) {
+      let detail = `The analysis service returned ${response.status}.`;
       const contentType = response.headers.get("content-type") || "";
       if (contentType.includes("application/json")) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.detail || `Request failed with status ${response.status}`);
+        const body = await response.json().catch(() => null);
+        if (body?.detail) {
+          detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+        }
       }
-      throw new Error(`Analysis service returned ${response.status}. Check Render logs for a crash or restart during analysis.`);
+      throw new Error(detail);
     }
     const data = await response.json();
-    render(data);
-    setProgress("done");
-    statusText.textContent = "Analysis complete.";
+    render(data, elapsed);
+    statusNote.textContent = `appraisal complete in ${elapsed.toFixed(1)}s`;
   } catch (error) {
-    statusText.textContent = error.message;
-    setResultState("is-pending");
-    document.querySelector("#verdictText").textContent = "Analysis failed";
-    document.querySelector("#verdictCopy").textContent = "The displayed results were not updated.";
-    setProgress(null);
+    elapsed = elapsed || (performance.now() - startedAt) / 1000;
+    const message =
+      error instanceof TypeError
+        ? "Could not reach the analysis service. Check your connection and try again."
+        : error.message;
+    renderError(message, elapsed);
+    statusNote.textContent = message;
+    statusNote.classList.add("is-error");
   } finally {
-    setLoading(false);
+    stopLoading();
   }
 });
+
+/* ---------- appendix controls ---------- */
 
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     tabs.forEach((item) => item.classList.remove("active"));
     tab.classList.add("active");
     currentTab = tab.dataset.tab;
-    renderDetails();
+    renderAppendix();
+    appendixContent.classList.remove("hidden");
+    toggleAppendix.textContent = "Hide";
+    toggleAppendix.setAttribute("aria-expanded", "true");
   });
 });
 
-toggleDetails.addEventListener("click", () => {
-  detailsBody.classList.toggle("hidden");
-  toggleDetails.textContent = detailsBody.classList.contains("hidden") ? "⌄" : "⌃";
+toggleAppendix.addEventListener("click", () => {
+  const nowHidden = appendixContent.classList.toggle("hidden");
+  toggleAppendix.textContent = nowHidden ? "Show" : "Hide";
+  toggleAppendix.setAttribute("aria-expanded", String(!nowHidden));
 });
 
-document.querySelector("#aboutButton").addEventListener("click", () => {
-  aboutDialog.showModal();
-});
+/* ---------- masthead date ---------- */
 
-document.querySelector("#closeAbout").addEventListener("click", () => {
-  aboutDialog.close();
+document.querySelector("#issueDate").textContent = new Date().toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
 });
-
-render({
-  api_version: "v1",
-  coffee: {
-    coffee_name: "Example Coffee",
-    roaster: "Example Roaster",
-    roaster_country: "United States",
-    origin_country: "Kenya",
-    origin_region: "Nyeri",
-    process_method: ["washed"],
-    variety: ["sl28", "sl34"],
-    producer_or_farm: "Example Cooperative",
-    altitude: "1800-2000 masl",
-    is_blend: false,
-    is_espresso: false,
-    is_decaf: false,
-    sensory_text: "Blackcurrant, citrus, florals",
-    display_tasting_notes: "Blackcurrant, citrus, florals",
-    producer_text: "Washed coffee from Nyeri.",
-    source_snippets: [],
-  },
-  price: {
-    listed_price: 23,
-    bag_size_value: 250,
-    bag_size_unit: "g",
-    price_100g_usd: 9.2,
-    assumptions: ["Assumed USD because page used $ and no other currency was found"],
-  },
-  model_input: {},
-  prediction: {
-    rating: { predicted: 93, interval_low: null, interval_high: null, model_version: "rating/model.pkl" },
-    price: { predicted_price_100g_usd: 8.5, predicted_bag_price_usd: 21.25, interval_low: null, interval_high: null, model_version: "price/model.pkl" },
-    value: { verdict: "priced_about_right", listed_vs_predicted_delta_pct: 8.2 },
-  },
-  quality: { extraction_quality: "good", missing_fields: [], warnings: [] },
-});
-renderPendingHero();

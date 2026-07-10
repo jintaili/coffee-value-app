@@ -4,223 +4,148 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Worth the Roast?</title>
-    <link rel="stylesheet" href="/static/styles.css?v=project-modal" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v=ledger1" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">◐</div>
-        <div class="brand-name">Worth the Roast?</div>
-        <div class="tagline">Specialty coffee price and quality checker</div>
-      </div>
-      <nav class="nav">
-        <button class="nav-button" type="button" id="aboutButton">ⓘ Project</button>
-      </nav>
-    </header>
-
-    <main class="shell">
-      <section class="panel input-panel">
-        <form id="analyzeForm">
-          <label for="urlInput">Paste a coffee product URL</label>
-          <div class="input-row">
-            <input
-              id="urlInput"
-              name="url"
-              type="url"
-              placeholder="https://example-roaster.com/products/example-coffee"
-              autocomplete="url"
-              required
-            />
-            <button class="primary-button" type="submit">
-              <span aria-hidden="true">▶</span>
-              Analyze
-            </button>
-          </div>
+    <div class="sheet">
+      <header class="masthead">
+        <div class="issue-line">
+          <span>Specialty Coffee, Appraised</span>
+          <span>Machine-learned quality &amp; fair-price estimates</span>
+          <span id="issueDate">—</span>
+        </div>
+        <h1>Worth the Roast?</h1>
+        <p class="sub">Paste a roaster's product page. The ledger reads it, predicts quality and a fair price, and judges the asking price.</p>
+        <form class="subscribe" id="analyzeForm">
+          <input
+            id="urlInput"
+            name="url"
+            type="url"
+            placeholder="https://example-roaster.com/products/example-coffee"
+            autocomplete="url"
+            required
+          />
+          <button type="submit" id="analyzeButton">Appraise</button>
         </form>
-        <div class="progress" aria-label="Analysis progress">
-          <div class="step" data-step="fetch"><span class="step-dot">✓</span><span>Fetching page</span></div>
-          <div class="step-line"></div>
-          <div class="step" data-step="extract"><span class="step-dot">✓</span><span>Extracting details</span></div>
-          <div class="step-line"></div>
-          <div class="step" data-step="predict"><span class="step-dot">✓</span><span>Running prediction</span></div>
+        <p class="subscribe-note" id="statusNote">extraction, normalization &amp; prediction — usually under half a minute</p>
+      </header>
+
+      <section class="appraisal hidden" id="appraisal">
+        <div class="headline" id="headline">
+          <div class="headline-copy">
+            <p class="kicker" id="kicker">The Verdict</p>
+            <h2 class="verdict" id="verdictHead">Appraising…</h2>
+            <p class="dek" id="verdictDek"></p>
+            <p class="caveat hidden" id="caveat"></p>
+          </div>
+          <aside class="score-block" id="scoreBlock">
+            <div class="label">Predicted Rating</div>
+            <div class="score"><span id="scoreValue">—</span><small>/100</small></div>
+            <div class="grade" id="scoreGrade">—</div>
+            <div class="interval" id="scoreInterval">—</div>
+          </aside>
         </div>
-        <p class="status-text" id="statusText">Ready to analyze a product page.</p>
+
+        <div class="columns" id="columns">
+          <div>
+            <h3 class="col-title">Tasting &amp; Provenance</h3>
+            <table class="ledger" id="ledgerTable"></table>
+          </div>
+          <div>
+            <h3 class="col-title">The Price Question</h3>
+            <div class="tariff">
+              <div class="tariff-row">
+                <div class="name">Listed price<small id="listedMeta">—</small></div>
+                <div class="amt" id="listedAmt">—</div>
+              </div>
+              <div class="tariff-row">
+                <div class="name">Predicted fair price<small id="fairMeta">—</small></div>
+                <div class="amt" id="fairAmt">—</div>
+              </div>
+              <div class="tariff-row result">
+                <div class="name">Premium over fair<small>fair band is ±20%</small></div>
+                <div class="amt" id="premiumAmt">—</div>
+              </div>
+              <div class="tariff-foot" id="tariffFoot"></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="record">
+          <h3 class="col-title">Appraisal Record <span class="col-note">— what the pipeline saw, assumed &amp; predicted</span></h3>
+          <div class="log" id="recordLog" aria-live="polite"></div>
+        </section>
+
+        <section class="appendix">
+          <div class="appendix-head">
+            <h3 class="col-title">Appendix</h3>
+            <div class="tabs" role="tablist">
+              <button class="tab active" type="button" data-tab="json">Analysis JSON</button>
+              <button class="tab" type="button" data-tab="snippets">Source snippets</button>
+              <button class="tab" type="button" data-tab="input">Model input</button>
+            </div>
+            <button class="ghost-button" type="button" id="toggleAppendix" aria-expanded="false">Show</button>
+          </div>
+          <pre class="code-block hidden" id="appendixContent">{}</pre>
+        </section>
       </section>
 
-      <section class="panel hero-verdict is-pending" id="heroVerdict">
-        <div class="hero-copy">
-          <span class="eyebrow">Value Verdict</span>
-          <div class="verdict" id="verdictText">Awaiting analysis</div>
-          <p id="verdictCopy">Paste a product URL to estimate quality and price fairness.</p>
-        </div>
-        <div class="hero-gauge">
-          <svg class="gauge" viewBox="0 0 260 150" aria-hidden="true">
-            <path class="gauge-arc gauge-green" d="M 35 115 A 95 95 0 0 1 83 33" />
-            <path class="gauge-arc gauge-yellow" d="M 90 29 A 95 95 0 0 1 170 29" />
-            <path class="gauge-arc gauge-red" d="M 177 33 A 95 95 0 0 1 225 115" />
-            <g id="needle" transform="rotate(0 130 115)">
-              <line class="needle-line" x1="130" y1="115" x2="130" y2="48" />
-              <circle class="needle-hub" cx="130" cy="115" r="9" />
-            </g>
-          </svg>
-        </div>
-        <div class="hero-metrics">
-          <div class="hero-metric">
-            <span>Predicted Rating</span>
-            <strong><span id="predictedRating">—</span><small class="rating-denominator">/100</small></strong>
-            <em id="ratingLabel">—</em>
+      <section class="method">
+        <h3 class="col-title">How the Ledger Appraises</h3>
+        <div class="method-grid">
+          <div class="method-item">
+            <div class="roman">i.</div>
+            <h4>Read the page</h4>
+            <p>
+              An LLM performs structured extraction on the roaster's product page — origin, process, variety,
+              price, bag size — into a stable feature schema, keeping verbatim source snippets for audit. Pages
+              that aren't coffee products are recognized and declined, not force-fit.
+            </p>
           </div>
-          <div class="hero-metric">
-            <span>Predicted Fair Price</span>
-            <strong id="predictedBagPrice">—</strong>
-            <em id="predicted100g">—</em>
+          <div class="method-item">
+            <div class="roman">ii.</div>
+            <h4>Normalize the facts</h4>
+            <p>
+              Currencies convert to USD at live rates, bag sizes to grams, roaster country is resolved when
+              absent. Every assumption the pipeline makes is recorded and disclosed in the appraisal record.
+            </p>
           </div>
-          <div class="hero-metric">
-            <span>Listed Price</span>
-            <strong id="listedBagPrice">—</strong>
-            <em id="listed100g">—</em>
+          <div class="method-item">
+            <div class="roman">iii.</div>
+            <h4>Predict &amp; compare</h4>
+            <p>
+              Local rating and fair-price models — trained on a research corpus of reviewed specialty coffees —
+              score expected quality and estimate what the coffee should cost, then judge the listed price
+              against that estimate.
+            </p>
           </div>
-          <div class="hero-metric premium">
-            <span>Price Premium</span>
-            <strong id="pricePremium">—</strong>
-            <em>vs. predicted fair price</em>
-          </div>
-        </div>
-        <div class="result-overlay" aria-live="polite">
-          <span class="spinner" aria-hidden="true"></span>
-          <strong>Calculating results</strong>
         </div>
       </section>
 
-      <div class="content-grid">
-        <section class="main-column">
-          <section class="panel summary-panel">
-            <h2><span aria-hidden="true">☕</span> Coffee Summary</h2>
-            <div class="summary-grid" id="summaryGrid"></div>
-            <div class="badges" id="badges"></div>
-          </section>
-
-          <section class="panel prediction-panel">
-            <h2><span aria-hidden="true">↗</span> Prediction Details</h2>
-            <div class="metric-grid">
-              <div class="metric-card">
-                <span>Predicted rating</span>
-                <strong id="detailPredictedRating">—</strong>
-              </div>
-              <div class="metric-card">
-                <span>Rating interval</span>
-                <strong id="ratingInterval">—</strong>
-              </div>
-              <div class="metric-card">
-                <span>Predicted fair bag price</span>
-                <strong id="detailPredictedBagPrice">—</strong>
-              </div>
-              <div class="metric-card">
-                <span>Predicted fair price / 100g</span>
-                <strong id="detailPredicted100g">—</strong>
-              </div>
-              <div class="metric-card">
-                <span>Price interval</span>
-                <strong id="priceInterval">—</strong>
-              </div>
-            </div>
-            <p class="model-line" id="modelLine">Rating model: — · Price model: —</p>
-          </section>
-
-          <section class="panel warnings-panel">
-            <h2><span aria-hidden="true">⚠</span> Warnings &amp; Assumptions</h2>
-            <div class="inline-list" id="warningsList"></div>
-          </section>
-
-          <section class="panel details-panel">
-            <div class="details-header">
-              <h2><span aria-hidden="true">▤</span> Details</h2>
-              <button class="ghost-button" type="button" id="toggleDetails">⌃</button>
-            </div>
-            <div id="detailsBody">
-              <div class="tabs" role="tablist">
-                <button class="tab active" type="button" data-tab="json">Analysis JSON</button>
-                <button class="tab" type="button" data-tab="snippets">Source snippets</button>
-                <button class="tab" type="button" data-tab="missing">Missing fields</button>
-                <button class="tab" type="button" data-tab="versions">Versions</button>
-              </div>
-              <pre class="code-block" id="detailsContent">{}</pre>
-            </div>
-          </section>
-        </section>
-
-      <aside class="side-column">
-        <section class="panel quality-card">
-          <h2><span aria-hidden="true">🛡</span> Extraction Quality</h2>
-          <div class="quality-row"><span>Quality</span><strong id="qualityValue">—</strong></div>
-          <div class="quality-row"><span>Completeness</span><strong id="completenessValue">—</strong></div>
-          <div class="quality-row"><span>Missing fields</span><strong id="missingValue">—</strong></div>
-          <div class="quality-row"><span>Warnings</span><strong id="warningValue">—</strong></div>
-        </section>
-
-        <section class="panel checks-card">
-          <h2><span aria-hidden="true">☑</span> What the app checks</h2>
-          <ul>
-            <li>origin</li>
-            <li>process</li>
-            <li>variety</li>
-            <li>tasting notes</li>
-            <li>price &amp; bag size</li>
-            <li>model versions</li>
-          </ul>
-        </section>
-      </aside>
-      </div>
-    </main>
-
-    <template id="summaryRowTemplate">
-      <div class="summary-row">
-        <span class="row-label"></span>
-        <strong class="row-value"></strong>
-      </div>
-    </template>
-
-    <dialog class="about-dialog" id="aboutDialog">
-      <div class="dialog-header">
-        <div>
-          <span class="eyebrow">Project</span>
-          <h2>Worth the Roast?</h2>
+      <footer class="colophon">
+        <div class="colophon-links">
+          <a href="https://github.com/jintaili/coffee-value-app" target="_blank" rel="noopener noreferrer">
+            <strong>coffee-value-app</strong><span>web app &amp; inference service</span>
+          </a>
+          <a href="https://github.com/jintaili/coffee-value-autoresearch" target="_blank" rel="noopener noreferrer">
+            <strong>coffee-value-autoresearch</strong><span>model research pipeline</span>
+          </a>
+          <a href="https://github.com/jintaili/extraction-gym" target="_blank" rel="noopener noreferrer">
+            <strong>extraction-gym</strong><span>gated prompt-optimization harness</span>
+          </a>
         </div>
-        <button class="ghost-button" type="button" id="closeAbout" aria-label="Close about dialog">×</button>
-      </div>
-      <div class="about-body">
-        <p>
-          Worth the Roast? extracts specialty coffee attributes from a roaster product page, predicts
-          rating and fair price, and compares that estimate with the listed price.
-        </p>
+        <div class="colophon-note" id="colophonModels">
+          FastAPI · LLM structured extraction · local rating &amp; fair-price model artifacts
+        </div>
+      </footer>
+    </div>
 
-        <section class="about-section">
-          <h3>Technical highlights</h3>
-          <ul class="highlight-list">
-            <li>LLM structured extraction from messy product pages into a stable model feature schema.</li>
-            <li>FastAPI inference layer serving local rating and fair-price model artifacts.</li>
-            <li>Currency, bag-size, and roaster-country normalization before prediction.</li>
-            <li>Inspectable provenance through extracted JSON, source snippets, assumptions, and model versions.</li>
-            <li>Render deployment with production configuration separated from browser-facing code.</li>
-          </ul>
-        </section>
-
-        <section class="about-section">
-          <h3>Source</h3>
-          <div class="repo-links">
-            <a href="https://github.com/jintaili/coffee-value-app" target="_blank" rel="noopener noreferrer">
-              <strong>coffee-value-app</strong>
-              <span>Web app and inference service</span>
-            </a>
-            <a href="https://github.com/jintaili/coffee-value-autoresearch" target="_blank" rel="noopener noreferrer">
-              <strong>coffee-value-autoresearch</strong>
-              <span>Model research and automated coffee workflows</span>
-            </a>
-          </div>
-        </section>
-      </div>
-    </dialog>
-
-    <script src="/static/app.js?v=project-modal"></script>
+    <script src="/static/app.js?v=ledger1"></script>
   </body>
 </html>
