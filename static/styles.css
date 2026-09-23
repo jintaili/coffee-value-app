@@ -377,6 +377,118 @@ a:focus-visible {
   color: var(--leaf);
 }
 
+.scale {
+  margin-top: 22px;
+}
+
+.scale-track {
+  position: relative;
+  height: 14px;
+}
+
+.scale-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--rule);
+}
+
+.scale-band {
+  position: absolute;
+  left: 30%;
+  width: 40%;
+  top: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M0 6L6 0M-1.5 1.5L1.5 -1.5M4.5 7.5L7.5 4.5' stroke='%23cfc8ba' stroke-width='1'/%3E%3C/svg%3E") repeat;
+}
+
+.scale-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  margin-left: -0.5px;
+  background: var(--rule);
+}
+
+.scale-needle {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  color: var(--ink);
+  background: currentColor;
+  transition: left 0.6s ease;
+}
+
+.scale-needle.delta-under {
+  color: var(--leaf);
+}
+
+.scale-needle.delta-over {
+  color: var(--vermilion);
+}
+
+/* delta beyond ±50%: needle sits at the edge with an outward arrowhead */
+.scale-needle.clamped-high::after,
+.scale-needle.clamped-low::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  margin-top: -4px;
+  border: 4px solid transparent;
+}
+
+.scale-needle.clamped-high::after {
+  left: 4px;
+  border-left-color: currentColor;
+}
+
+.scale-needle.clamped-low::after {
+  right: 4px;
+  border-right-color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scale-needle {
+    transition: none;
+  }
+}
+
+.scale-labels {
+  position: relative;
+  height: 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: 7px;
+}
+
+.scale-labels span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.scale-labels .lo {
+  left: 0;
+}
+
+.scale-labels .mid {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.scale-labels .hi {
+  right: 0;
+}
+
 .tariff-foot {
   font-family: var(--mono);
   font-size: 10.5px;

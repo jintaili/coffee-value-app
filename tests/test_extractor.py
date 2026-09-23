@@ -1,8 +1,15 @@
 from types import SimpleNamespace
 
+import httpx
 import pytest
+from openai import RateLimitError
 
-from coffee_value_app.extractor import OpenAILLMExtractor, parse_structured_response, trim_page_text
+from coffee_value_app.extractor import (
+    ExtractionUnavailableError,
+    OpenAILLMExtractor,
+    parse_structured_response,
+    trim_page_text,
+)
 from coffee_value_app.schemas import ExtractedCoffee, ExtractedPrice, PageExtraction, QualityReport
 
 
@@ -26,6 +33,22 @@ class FakeResponses:
 class FakeClient:
     def __init__(self, parsed: PageExtraction) -> None:
         self.responses = FakeResponses(parsed)
+
+
+class QuotaLimitedResponses:
+    async def parse(self, **kwargs):
+        request = httpx.Request("POST", "https://api.openai.com/v1/responses")
+        response = httpx.Response(429, request=request)
+        raise RateLimitError(
+            "You exceeded your current quota.",
+            response=response,
+            body={"code": "insufficient_quota"},
+        )
+
+
+class QuotaLimitedClient:
+    def __init__(self) -> None:
+        self.responses = QuotaLimitedResponses()
 
 
 def test_trim_page_text_keeps_start_and_end_for_long_pages() -> None:
@@ -82,6 +105,17 @@ async def test_openai_extractor_requests_structured_page_extraction() -> None:
     assert client.responses.kwargs["model"] == "gpt-test"
     assert client.responses.kwargs["text_format"] is PageExtraction
     assert "Peru La Margarita Gesha" in client.responses.kwargs["input"][1]["content"]
+
+
+@pytest.mark.anyio
+async def test_openai_extractor_reports_exhausted_api_credits() -> None:
+    extractor = OpenAILLMExtractor(client=QuotaLimitedClient(), model="gpt-test")
+
+    with pytest.raises(ExtractionUnavailableError, match="credit balance is exhausted"):
+        await extractor.extract(
+            url="https://example.com/coffee",
+            page_text="Coffee product page",
+        )
 
 
 def test_parse_structured_response_handles_plain_dict() -> None:

@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from coffee_value_app.analysis import FixtureAnalysisService
+from coffee_value_app.extractor import ExtractionUnavailableError
 from coffee_value_app.main import create_app
 from coffee_value_app.schemas import PredictionResult, PricePrediction, RatingPrediction, ValuePrediction
 
@@ -19,6 +20,14 @@ class FakeModelService:
                 model_version="fake",
             ),
             value=ValuePrediction(verdict="expensive_for_predicted_quality", listed_vs_predicted_delta_pct=33.4),
+        )
+
+
+class UnavailableAnalysisService:
+    async def analyze_url(self, url):
+        raise ExtractionUnavailableError(
+            "Appraisal is unavailable because the OpenAI API credit balance is exhausted. "
+            "Add API credits and try again."
         )
 
 
@@ -61,3 +70,19 @@ def test_analyze_api_returns_fixture_response_shape() -> None:
     assert data["prediction"]["rating"]["model_version"] == "fake"
     assert data["prediction"]["price"]["predicted_price_100g_usd"] == 18.5
     assert data["prediction"]["value"]["verdict"] == "expensive_for_predicted_quality"
+
+
+def test_analyze_api_reports_exhausted_api_credits() -> None:
+    app = create_app()
+    app.state.analysis_service = UnavailableAnalysisService()
+    client = TestClient(app)
+
+    response = client.post("/api/analyze", json={"url": "https://example.com/coffee"})
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "detail": (
+            "Appraisal is unavailable because the OpenAI API credit balance is exhausted. "
+            "Add API credits and try again."
+        )
+    }

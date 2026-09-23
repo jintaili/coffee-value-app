@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import math
 import pickle
 import re
@@ -38,6 +39,18 @@ STRUCTURED_FIELDS = [
 ]
 TEXT_FIELDS = ["sensory_text", "producer_text"]
 NGRAM_MAX = 2
+MODEL_INPUT_FIELDS = list(ModelInput.model_fields)
+PRICE_PACKAGE_FEATURES = [
+    "package_grams_log_z",
+    "package_grams_missing",
+    "package_grams_le_20",
+    "package_grams_le_50",
+    "package_grams_le_100",
+]
+
+
+class ModelArtifactContractError(RuntimeError):
+    """Raised when a serialized model is incompatible with the serving contract."""
 
 
 def tokenize(text: str) -> list[str]:
@@ -163,6 +176,10 @@ class ModelService:
         install_pickle_compatibility_aliases()
         self.rating_artifact = load_pickle(rating_model_path)
         self.price_artifact = load_pickle(price_model_path)
+        validate_model_artifact(self.rating_artifact, kind="rating", path=rating_model_path)
+        validate_model_artifact(self.price_artifact, kind="price", path=price_model_path)
+        self.rating_model_version = artifact_version("rating", rating_model_path)
+        self.price_model_version = artifact_version("price", price_model_path)
 
     def predict(self, model_input: ModelInput, listed_price: ExtractedPrice) -> PredictionResult:
         row = model_input_row(model_input)
@@ -176,14 +193,14 @@ class ModelService:
                 predicted=round(rating, 1),
                 interval_low=round(rating - 1.6, 1),
                 interval_high=round(rating + 1.6, 1),
-                model_version="rating/model.pkl",
+                model_version=self.rating_model_version,
             ),
             price=PricePrediction(
                 predicted_price_100g_usd=round(price_100g, 2) if price_100g is not None else None,
                 predicted_bag_price_usd=round(predicted_bag_price, 2) if predicted_bag_price is not None else None,
                 interval_low=round(price_100g * 0.6, 2) if price_100g is not None else None,
                 interval_high=round(price_100g * 1.6, 2) if price_100g is not None else None,
-                model_version="price/model.pkl",
+                model_version=self.price_model_version,
             ),
             value=value_prediction(listed_price.price_100g_usd, price_100g),
         )
@@ -211,6 +228,64 @@ def load_pickle(path: Path):
     install_pickle_compatibility_aliases()
     with path.open("rb") as f:
         return pickle.load(f)
+
+
+def artifact_version(kind: str, path: Path) -> str:
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()[:12]
+    return f"{kind}:{digest}"
+
+
+def validate_model_artifact(artifact: object, *, kind: str, path: Path) -> None:
+    """Validate the training/serving boundary before accepting an artifact."""
+    prefix = f"Incompatible {kind} model artifact at {path}"
+    if not isinstance(artifact, dict):
+        raise ModelArtifactContractError(f"{prefix}: expected a dictionary")
+
+    required_keys = {"config", "encoder", "weights", "intercept"}
+    missing_keys = sorted(required_keys - artifact.keys())
+    if missing_keys:
+        raise ModelArtifactContractError(f"{prefix}: missing keys {missing_keys}")
+
+    config = artifact["config"]
+    if not isinstance(config, dict):
+        raise ModelArtifactContractError(f"{prefix}: config must be a dictionary")
+
+    expected_model = "ridge" if kind == "rating" else "elasticnet"
+    if config.get("model") != expected_model:
+        raise ModelArtifactContractError(
+            f"{prefix}: expected model={expected_model!r}, got {config.get('model')!r}"
+        )
+    if kind == "rating" and config.get("encoder") != "tfidf":
+        raise ModelArtifactContractError(
+            f"{prefix}: expected encoder='tfidf', got {config.get('encoder')!r}"
+        )
+    if config.get("structured_fields") != STRUCTURED_FIELDS:
+        raise ModelArtifactContractError(f"{prefix}: structured_fields do not match the serving schema")
+    if config.get("text_fields") != TEXT_FIELDS:
+        raise ModelArtifactContractError(f"{prefix}: text_fields do not match the serving schema")
+    if config.get("ngram_max") != NGRAM_MAX:
+        raise ModelArtifactContractError(
+            f"{prefix}: expected ngram_max={NGRAM_MAX}, got {config.get('ngram_max')!r}"
+        )
+    expected_input_fields = STRUCTURED_FIELDS + TEXT_FIELDS + ["package_grams"]
+    if MODEL_INPUT_FIELDS != expected_input_fields:
+        raise ModelArtifactContractError(
+            f"{prefix}: application ModelInput fields have changed; retrain or update the artifact contract"
+        )
+    if kind == "price" and config.get("package_features") != PRICE_PACKAGE_FEATURES:
+        raise ModelArtifactContractError(f"{prefix}: package_features do not match the serving encoder")
+
+    encoder = artifact["encoder"]
+    if not callable(getattr(encoder, "transform", None)):
+        raise ModelArtifactContractError(f"{prefix}: encoder must provide transform()")
+    feature_names = getattr(encoder, "feature_names", None)
+    weights = artifact["weights"]
+    if feature_names is None or not hasattr(weights, "shape"):
+        raise ModelArtifactContractError(f"{prefix}: missing feature names or weight dimensions")
+    if len(feature_names) != int(weights.shape[0]):
+        raise ModelArtifactContractError(
+            f"{prefix}: encoder emits {len(feature_names)} features but weights expect {weights.shape[0]}"
+        )
 
 
 def model_input_row(model_input: ModelInput) -> dict[str, str]:

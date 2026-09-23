@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/static/styles.css?v=ledger1" />
+    <link rel="stylesheet" href="/static/styles.css?v=ledger3" />
   </head>
   <body>
     <div class="sheet">
@@ -69,8 +69,24 @@
                 <div class="amt" id="fairAmt">—</div>
               </div>
               <div class="tariff-row result">
-                <div class="name">Premium over fair<small>fair band is ±20%</small></div>
+                <div class="name">Premium over fair<small>listed vs. predicted fair price</small></div>
                 <div class="amt" id="premiumAmt">—</div>
+              </div>
+              <div class="scale hidden" id="priceScale" role="img">
+                <div class="scale-track">
+                  <span class="scale-band"></span>
+                  <span class="scale-tick" style="left: 0"></span>
+                  <span class="scale-tick" style="left: 30%"></span>
+                  <span class="scale-tick" style="left: 50%"></span>
+                  <span class="scale-tick" style="left: 70%"></span>
+                  <span class="scale-tick" style="left: 100%"></span>
+                  <span class="scale-needle" id="scaleNeedle"></span>
+                </div>
+                <div class="scale-labels">
+                  <span class="lo">−50% under</span>
+                  <span class="mid">fair band ±20%</span>
+                  <span class="hi">over +50%</span>
+                </div>
               </div>
               <div class="tariff-foot" id="tariffFoot"></div>
             </div>
@@ -136,6 +152,9 @@
           <a href="https://github.com/jintaili/coffee-value-autoresearch" target="_blank" rel="noopener noreferrer">
             <strong>coffee-value-autoresearch</strong><span>model research pipeline</span>
           </a>
+          <a href="/static/jev/jev-results-showcase.html">
+            <strong>JEV experiment</strong><span>model results and extraction pilot</span>
+          </a>
           <a href="https://github.com/jintaili/extraction-gym" target="_blank" rel="noopener noreferrer">
             <strong>extraction-gym</strong><span>gated prompt-optimization harness</span>
           </a>
@@ -146,6 +165,6 @@
       </footer>
     </div>
 
-    <script src="/static/app.js?v=ledger1"></script>
+    <script src="/static/app.js?v=ledger3"></script>
   </body>
 </html>

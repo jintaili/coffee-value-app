@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import Protocol
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, RateLimitError
 
 from coffee_value_app.config import DEFAULT_EXTRACTION_MODEL, DEFAULT_MAX_PAGE_TEXT_CHARS, Settings, load_settings
 from coffee_value_app.schemas import PageExtraction
@@ -14,6 +14,10 @@ MAX_PAGE_TEXT_CHARS = DEFAULT_MAX_PAGE_TEXT_CHARS
 
 class ExtractionError(Exception):
     """Raised when coffee extraction fails."""
+
+
+class ExtractionUnavailableError(ExtractionError):
+    """Raised when the extraction provider is temporarily unavailable."""
 
 
 class ResponsesParseClient(Protocol):
@@ -39,17 +43,27 @@ class OpenAILLMExtractor:
         if not trimmed_text:
             raise ExtractionError("Cannot extract coffee details from empty page text.")
 
-        response = await self.client.responses.parse(
-            model=self.model,
-            input=[
-                {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": build_extraction_user_prompt(url=url, page_text=trimmed_text),
-                },
-            ],
-            text_format=PageExtraction,
-        )
+        try:
+            response = await self.client.responses.parse(
+                model=self.model,
+                input=[
+                    {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": build_extraction_user_prompt(url=url, page_text=trimmed_text),
+                    },
+                ],
+                text_format=PageExtraction,
+            )
+        except RateLimitError as exc:
+            if exc.code == "insufficient_quota":
+                message = (
+                    "Appraisal is unavailable because the OpenAI API credit balance is exhausted. "
+                    "Add API credits and try again."
+                )
+            else:
+                message = "Appraisal is temporarily rate-limited. Please try again shortly."
+            raise ExtractionUnavailableError(message) from exc
         return parse_structured_response(response)
 
 

@@ -244,6 +244,25 @@ function renderTariff(data) {
   if (delta != null && delta > 20) premium.classList.add("delta-over");
   if (delta != null && delta < -20) premium.classList.add("delta-under");
 
+  const scale = document.querySelector("#priceScale");
+  const needle = document.querySelector("#scaleNeedle");
+  if (delta == null) {
+    scale.classList.add("hidden");
+  } else {
+    scale.classList.remove("hidden");
+    const clamped = Math.max(-50, Math.min(50, delta));
+    needle.style.left = `${clamped + 50}%`;
+    needle.classList.remove("delta-over", "delta-under", "clamped-high", "clamped-low");
+    if (delta > 20) needle.classList.add("delta-over");
+    if (delta < -20) needle.classList.add("delta-under");
+    if (delta > 50) needle.classList.add("clamped-high");
+    if (delta < -50) needle.classList.add("clamped-low");
+    scale.setAttribute(
+      "aria-label",
+      `Listed price is ${Math.abs(delta).toFixed(1)}% ${delta >= 0 ? "above" : "below"} the predicted fair price; the fair band spans ±20%.`
+    );
+  }
+
   const footParts = (price.assumptions || []).slice();
   footParts.push("non-USD prices converted at live Frankfurter rates before prediction");
   document.querySelector("#tariffFoot").textContent = footParts.join(" · ");

@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from coffee_value_app import __version__
 from coffee_value_app.analysis import AnalysisService
 from coffee_value_app.config import load_settings
-from coffee_value_app.extractor import ExtractionError
+from coffee_value_app.extractor import ExtractionError, ExtractionUnavailableError
 from coffee_value_app.fetcher import BlockedUrlError, FetchError, InvalidUrlError
 from coffee_value_app.history import DisabledHistoryStore, PostgresHistoryStore
 from coffee_value_app.schemas import AnalyzeRequest, AnalyzeResponse, HistoryListResponse, HistoryResponseItem
@@ -64,6 +64,10 @@ def create_app() -> FastAPI:
             logger.warning("Analyze fetch failed for %s: %s", request_body.url, exc, exc_info=True)
             await anyio.to_thread.run_sync(lambda: history_store.save_error(url=url, error=str(exc)))
             raise HTTPException(status_code=502, detail=str(exc)) from exc
+        except ExtractionUnavailableError as exc:
+            logger.warning("Analyze extraction unavailable for %s: %s", request_body.url, exc)
+            await anyio.to_thread.run_sync(lambda: history_store.save_error(url=url, error=str(exc)))
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ExtractionError as exc:
             logger.warning("Analyze extraction failed for %s: %s", request_body.url, exc, exc_info=True)
             await anyio.to_thread.run_sync(lambda: history_store.save_error(url=url, error=str(exc)))
