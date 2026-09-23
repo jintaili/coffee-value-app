@@ -15,26 +15,16 @@ Portfolio highlights:
 
 This repo is the web application and inference layer. Model training, experiment selection, and automated coffee research workflows live in [`coffee-value-autoresearch`](https://github.com/jintaili/coffee-value-autoresearch).
 
-## JEV research
+## JEV case study
 
-The companion research repo now has a shared, versioned TypeSafe JEV extractor.
-It asks 38 typed questions about a coffee lot and encodes the answer
-probabilities as training features. To reproduce the pilot, install that repo,
-set `TYPESAFE_API_KEY` in your shell, and run its `scripts/backfill_jev.py` and
-`scripts/evaluate_jev.py` commands. Its [JEV usage and results](https://github.com/jintaili/coffee-value-autoresearch#jev-training-experiments)
-include the exact commands, model comparisons, and an eight-page extraction
-timing pilot. Keep the key in a local environment variable, an ignored `.env`
-file, or a password manager; never commit it.
-
-The best historical price candidate reduced validation RMSLE from 0.25917 to
-0.25361. The JEV semantic call took 0.42 seconds at the median in the small
-product-page pilot, compared with 4.81 seconds for this app's full OpenAI
-extraction. Those calls return different fields. JEV does not yet provide the
-price, package, display, and page-type data needed for a complete appraisal,
-and the pilot found incorrect process labels on two pages. This deployed app
-therefore continues to use the OpenAI extractor and incumbent model artifacts.
-The research result is published for inspection, not presented as a live speed
-or prediction gain.
+The companion repo tests TypeSafe JEV's typed judgments as shared model features.
+Historical validation reduced the best price candidate's RMSLE from 0.25917 to
+0.25361 and raised rating concordance from 0.89104 to 0.89253. In a small
+product-page pilot, JEV's semantic call took 0.42 seconds at the median versus
+4.81 seconds for this app's complete extraction call. Those calls return different
+fields. The live app still uses its OpenAI extractor and incumbent models.
+Read the [results and limitations](https://coffee-value-app.onrender.com/static/jev/jev-results-showcase.html)
+or the [reproduction instructions](https://github.com/jintaili/coffee-value-autoresearch#jev-case-study).
 
 ## What It Does
 
