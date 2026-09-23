@@ -33,7 +33,7 @@
           />
           <button type="submit" id="analyzeButton">Appraise</button>
         </form>
-        <p class="subscribe-note" id="statusNote">extraction, normalization &amp; prediction — usually under half a minute</p>
+        <p class="subscribe-note" id="statusNote">JEV extraction, normalization &amp; prediction</p>
       </header>
 
       <section class="appraisal hidden" id="appraisal">
@@ -119,26 +119,25 @@
             <div class="roman">i.</div>
             <h4>Read the page</h4>
             <p>
-              An LLM performs structured extraction on the roaster's product page — origin, process, variety,
-              price, bag size — into a stable feature schema, keeping verbatim source snippets for audit. Pages
-              that aren't coffee products are recognized and declined, not force-fit.
+              TypeSafe JEV answers typed questions about origin, process, variety, and the coffee's story.
+              The app copies listed prices and bag sizes from product data, with source snippets for review.
+              Pages without one coffee product are declined.
             </p>
           </div>
           <div class="method-item">
             <div class="roman">ii.</div>
             <h4>Normalize the facts</h4>
             <p>
-              Currencies convert to USD at live rates, bag sizes to grams, roaster country is resolved when
-              absent. Every assumption the pipeline makes is recorded and disclosed in the appraisal record.
+              Currencies convert to USD at live rates and bag sizes to grams. When the page omits a roaster
+              country, the app uses domain evidence. The appraisal record lists its assumptions.
             </p>
           </div>
           <div class="method-item">
             <div class="roman">iii.</div>
             <h4>Predict &amp; compare</h4>
             <p>
-              Local rating and fair-price models — trained on a research corpus of reviewed specialty coffees —
-              score expected quality and estimate what the coffee should cost, then judge the listed price
-              against that estimate.
+              A lightweight local model estimates quality. The fair-price model uses the same JEV feature
+              schema in training and serving, then compares its estimate with the listed price.
             </p>
           </div>
         </div>
@@ -160,11 +159,11 @@
           </a>
         </div>
         <div class="colophon-note" id="colophonModels">
-          FastAPI · LLM structured extraction · local rating &amp; fair-price model artifacts
+          FastAPI · TypeSafe JEV extraction · local rating &amp; JEV-feature price model
         </div>
       </footer>
     </div>
 
-    <script src="/static/app.js?v=ledger3"></script>
+    <script src="/static/app.js?v=jev1"></script>
   </body>
 </html>

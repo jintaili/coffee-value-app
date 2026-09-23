@@ -196,6 +196,7 @@ class PageExtraction(BaseModel):
 class AnalyzeResponse(BaseModel):
     api_version: Literal["v1"] = "v1"
     status: Literal["ok"] = "ok"
+    extraction_model: str = "unknown"
     input: AnalyzeRequest
     page_type: PageType = "coffee_product"
     is_specialty_coffee: bool | None = None

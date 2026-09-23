@@ -5,6 +5,7 @@ description = "Inference web app for specialty coffee value analysis."
 requires-python = ">=3.11"
 dependencies = [
     "beautifulsoup4>=4.12,<5",
+    "coffee-value-shared @ git+https://github.com/jintaili/coffee-value-autoresearch@d9cf5f483f84fc120e3d6d7653e3e273972972db",
     "fastapi>=0.111,<1",
     "httpx>=0.27,<1",
     "numpy>=1.26,<3",

@@ -277,6 +277,7 @@ function renderRecord(data, elapsedSeconds) {
   const assumptions = data.price.assumptions || [];
 
   logLine(`GET ${data.input?.url || urlInput.value.trim()}`, "", 0);
+  logLine(`extractor ${data.extraction_model || "unknown"}`, "dim");
   logLine(
     `page_type = ${data.page_type} · specialty = ${
       data.is_specialty_coffee == null ? "unclear" : data.is_specialty_coffee ? "yes" : "no"
@@ -338,6 +339,7 @@ function renderAppendix() {
     appendixContent.textContent = JSON.stringify(
       {
         api_version: currentData.api_version,
+        extraction_model: currentData.extraction_model,
         page_type: currentData.page_type,
         is_specialty_coffee: currentData.is_specialty_coffee,
         coffee: currentData.coffee,

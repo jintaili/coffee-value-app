@@ -12,6 +12,10 @@ from pathlib import Path
 import numpy as np
 from scipy import sparse
 
+from coffee_value.extraction.encoding import ENCODING_VERSION, encode as encode_jev, feature_names as jev_feature_names
+from coffee_value.extraction.questions import CONTRACT_VERSION as JEV_CONTRACT_VERSION, MODEL as JEV_MODEL, question_hash
+from coffee_value.extraction.state import scrub_target_quotes
+
 from coffee_value_app.schemas import (
     ExtractedPrice,
     ModelInput,
@@ -25,6 +29,7 @@ from coffee_value_app.schemas import (
 ROOT = Path(__file__).resolve().parents[2]
 RATING_MODEL_PATH = ROOT / "artifacts" / "rating" / "model.pkl"
 PRICE_MODEL_PATH = ROOT / "artifacts" / "price" / "model.pkl"
+JEV_PRICE_MODEL_PATH = ROOT / "artifacts" / "price" / "jev_pg.pkl"
 
 STRUCTURED_FIELDS = [
     "origin_country",
@@ -51,6 +56,66 @@ PRICE_PACKAGE_FEATURES = [
 
 class ModelArtifactContractError(RuntimeError):
     """Raised when a serialized model is incompatible with the serving contract."""
+
+
+class JevPriceModel:
+    """Portable selected ElasticNet: shared JEV probabilities plus TF-IDF and package size."""
+
+    def __init__(self, path: Path = JEV_PRICE_MODEL_PATH) -> None:
+        artifact = load_pickle(path)
+        if not isinstance(artifact, dict) or artifact.get("format") != "coffee-jev-price-v1":
+            raise ModelArtifactContractError("Invalid JEV price artifact format")
+        expected = {
+            "contract_version": JEV_CONTRACT_VERSION,
+            "encoding_version": ENCODING_VERSION,
+            "jev_model": JEV_MODEL,
+            "question_hash": question_hash(),
+        }
+        for key, value in expected.items():
+            if artifact.get(key) != value:
+                raise ModelArtifactContractError(f"JEV price artifact {key} does not match serving contract")
+        encoder = FeatureEncoder()
+        encoder.structured_vocab = artifact["structured_vocab"]
+        encoder.text_vocab = artifact["text_vocab"]
+        encoder.idf = artifact["idf"]
+        encoder.package_log_mean = artifact["package_log_mean"]
+        encoder.package_log_std = artifact["package_log_std"]
+        offset = artifact["text_column_offset"]
+        text_names = [name for name, _ in sorted(encoder.text_vocab.items(), key=lambda item: item[1])]
+        if sorted(encoder.text_vocab.values()) != list(range(len(text_names))):
+            raise ModelArtifactContractError("JEV price text vocabulary has invalid indices")
+        encoder.feature_names = [None] * offset + [f"tfidf:{name}" for name in text_names] + PRICE_PACKAGE_FEATURES
+        expected_names = (jev_feature_names()
+                          + ["interaction:origin_country:Panama*variety_gesha:supported"]
+                          + encoder.feature_names[offset:])
+        if artifact["feature_names"] != expected_names:
+            raise ModelArtifactContractError("JEV price feature names are out of order")
+        coefficients = np.asarray(artifact["coefficients"], dtype=np.float64)
+        if len(coefficients) != len(artifact["feature_names"]):
+            raise ModelArtifactContractError("JEV price coefficient width does not match features")
+        if offset != len(encoder.structured_vocab):
+            raise ModelArtifactContractError("JEV price text offset does not match encoder")
+        if len(encoder.idf) != len(text_names):
+            raise ModelArtifactContractError("JEV price IDF width does not match vocabulary")
+        self.encoder = encoder
+        self.offset = offset
+        self.coefficients = coefficients
+        self.intercept = float(artifact["intercept"])
+        self.panama_index = jev_feature_names().index("jev:origin_country:Panama")
+        self.gesha_index = jev_feature_names().index("jev:variety_gesha:supported")
+        self.version = f"price-jev:{hashlib.sha256(path.read_bytes()).hexdigest()[:12]}"
+
+    def predict(self, row: dict[str, str], record: dict) -> float:
+        base = np.asarray(encode_jev(record), dtype=np.float64)
+        interaction = base[self.panama_index] * base[self.gesha_index]
+        clean_row = {**row, **{field: scrub_target_quotes(row.get(field, "")) for field in TEXT_FIELDS}}
+        text = self.encoder.transform([clean_row])[:, self.offset:]
+        values = sparse.hstack((sparse.csr_matrix(base.reshape(1, -1)),
+                                sparse.csr_matrix([[interaction]]), text), format="csr")
+        if values.shape[1] != len(self.coefficients):
+            raise ModelArtifactContractError("JEV serving vector width does not match price model")
+        pred_log = float(np.asarray(values @ self.coefficients + self.intercept).reshape(-1)[0])
+        return max(0.0, math.exp(pred_log))
 
 
 def tokenize(text: str) -> list[str]:
@@ -172,6 +237,7 @@ class ModelService:
         *,
         rating_model_path: Path = RATING_MODEL_PATH,
         price_model_path: Path = PRICE_MODEL_PATH,
+        jev_price_model_path: Path = JEV_PRICE_MODEL_PATH,
     ) -> None:
         install_pickle_compatibility_aliases()
         self.rating_artifact = load_pickle(rating_model_path)
@@ -180,11 +246,13 @@ class ModelService:
         validate_model_artifact(self.price_artifact, kind="price", path=price_model_path)
         self.rating_model_version = artifact_version("rating", rating_model_path)
         self.price_model_version = artifact_version("price", price_model_path)
+        self.jev_price_model = JevPriceModel(jev_price_model_path)
 
-    def predict(self, model_input: ModelInput, listed_price: ExtractedPrice) -> PredictionResult:
+    def predict(self, model_input: ModelInput, listed_price: ExtractedPrice, *, jev_record: dict | None = None) -> PredictionResult:
         row = model_input_row(model_input)
         rating = self._predict_rating(row)
-        price_100g = self._predict_price(row)
+        price_100g = self.jev_price_model.predict(row, jev_record) if jev_record is not None else self._predict_price(row)
+        price_model_version = self.jev_price_model.version if jev_record is not None else self.price_model_version
         predicted_bag_price = None
         if price_100g is not None and model_input.package_grams is not None:
             predicted_bag_price = price_100g * model_input.package_grams / 100.0
@@ -200,7 +268,7 @@ class ModelService:
                 predicted_bag_price_usd=round(predicted_bag_price, 2) if predicted_bag_price is not None else None,
                 interval_low=round(price_100g * 0.6, 2) if price_100g is not None else None,
                 interval_high=round(price_100g * 1.6, 2) if price_100g is not None else None,
-                model_version=self.price_model_version,
+                model_version=price_model_version,
             ),
             value=value_prediction(listed_price.price_100g_usd, price_100g),
         )

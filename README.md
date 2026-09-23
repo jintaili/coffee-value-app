@@ -6,7 +6,7 @@
 
 Portfolio highlights:
 
-- LLM-powered structured extraction from messy real-world product pages, aligned to downstream ML feature schemas.
+- TypeSafe JEV extraction from messy product pages using the same typed feature contract as training.
 - FastAPI backend serving local machine learning artifacts for rating and fair-price prediction.
 - Production-shaped normalization for package size, currency conversion, roaster country resolution, and extraction quality warnings.
 - Optional Supabase/Postgres query history for saving analyzed URLs, responses, and failed attempts.
@@ -17,12 +17,14 @@ This repo is the web application and inference layer. Model training, experiment
 
 ## JEV case study
 
-The companion repo tests TypeSafe JEV's typed judgments as shared model features.
-Historical validation reduced the best price candidate's RMSLE from 0.25917 to
-0.25361 and raised rating concordance from 0.89104 to 0.89253. In a small
-product-page pilot, JEV's semantic call took 0.42 seconds at the median versus
-4.81 seconds for this app's complete extraction call. Those calls return different
-fields. The live app still uses its OpenAI extractor and incumbent models.
+The live app uses TypeSafe JEV for typed product-page judgments and the selected
+JEV-feature price model. The lightweight rating model remains in place. In the
+research validation set, price RMSLE fell from 0.25917 to 0.25361, a 2.14%
+relative improvement. This was exploratory validation, not a fresh test set.
+On eight public pages, complete extraction took 0.423 seconds at the median with
+JEV versus 4.879 seconds with the previous extractor, a 91.3% reduction across
+16 local pairs. Page fetch and prediction were excluded; production end-to-end
+latency has not been measured.
 Read the [results and limitations](https://coffee-value-app.onrender.com/static/jev/jev-results-showcase.html)
 or the [reproduction instructions](https://github.com/jintaili/coffee-value-autoresearch#jev-case-study).
 
@@ -36,16 +38,16 @@ A request flows through:
 
 1. Fetch a public specialty coffee product page.
 2. Convert HTML and embedded product data into model-readable page context.
-3. Use an OpenAI structured-output extractor to produce the exact fields needed by the models.
-4. Resolve missing roaster country when useful and normalize non-USD prices to USD.
-5. Run local rating and price model artifacts.
+3. Ask JEV the same typed feature questions used for training, plus page and source-selection questions. Copy exact prices and package sizes from the product page.
+4. Infer roaster country from the domain when useful and normalize non-USD prices to USD.
+5. Run the lightweight rating model and JEV-feature price model locally.
 6. Return a value verdict plus inspectable extraction and prediction details.
 
 ## Core Components
 
 - `src/coffee_value_app/main.py`: FastAPI app, health check, static UI, and `/api/analyze`.
 - `src/coffee_value_app/analysis.py`: orchestration for fetch, extraction, normalization, and prediction.
-- `src/coffee_value_app/extractor.py`: OpenAI structured-output extraction prompt and parser.
+- `src/coffee_value_app/jev_extractor.py`: live JEV judgments and product-page extraction.
 - `src/coffee_value_app/model_runtime.py`: local model artifact loading and prediction.
 - `src/coffee_value_app/currency.py`: real-time currency normalization through Frankfurter.
 - `static/`: single-page UI for URL analysis, value verdict, summary fields, and debug panels.
@@ -65,7 +67,7 @@ Configure live extraction:
 
 ```bash
 cp .env.example .env
-# edit .env and set OPENAI_API_KEY
+# edit .env and set TYPESAFE_API_KEY
 ```
 
 Run the API:
@@ -100,12 +102,6 @@ Run extraction from a product URL:
 coffee-value extract "https://onyxcoffeelab.com/products/peru-la-margarita-gesha-26?variant=42842298646626"
 ```
 
-Override the extraction model:
-
-```bash
-coffee-value extract "https://example.com/product" --model gpt-4o-mini
-```
-
 ## API
 
 Analyze a product page:
@@ -128,10 +124,7 @@ The response includes:
 
 Environment variables are loaded from `.env` in development:
 
-- `OPENAI_API_KEY`: required for live extraction.
-- `OPENAI_EXTRACTION_MODEL`: structured extraction model.
-- `OPENAI_WEB_SEARCH_MODEL`: optional roaster-country resolver model.
-- `COFFEE_VALUE_MAX_PAGE_TEXT_CHARS`: page-context budget sent to the extractor.
+- `TYPESAFE_API_KEY`: required for live JEV extraction. Keep it in an uncommitted `.env` locally and a server-side secret in Render.
 - `COFFEE_VALUE_DATABASE_URL`: optional Postgres connection string for query history. Use the Supabase pooled connection string in production. If unset, the app runs normally with history disabled.
 
 See `.env.example` for the current defaults.
@@ -159,7 +152,7 @@ python -m pip install .
 uvicorn coffee_value_app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-The `lightweight` branch scales back the backend models for easier deployment: TF-IDF/ridge rating inference and ElasticNet price inference, with no sentence-transformer or Torch runtime dependency.
+The `lightweight` branch ships the selected JEV-feature ElasticNet price artifact alongside the TF-IDF/ridge rating artifact. It has no sentence-transformer or Torch runtime dependency. Regenerate the price artifact with `python -m scripts.export_jev_price_for_app --destination ../coffee-value-app/artifacts/price/jev_pg.pkl` from the research repo.
 
 ## Companion Repo
 
